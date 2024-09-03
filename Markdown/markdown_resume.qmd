@@ -1,0 +1,19 @@
+---
+title: "Markdown Resume"
+author: "Emma Sharp"
+format: html
+editor: visual
+---
+
+## About Me:
+
+I am a detail-oriented college student with experience in a variety customer-service forward jobs.
+
+## Experience:
+
+Under the Green Umbrella 
+hello
+
+## Education:
+
+hello...
