@@ -1,0 +1,24 @@
+---
+title: "My Intrests in Environmental Studies"
+author: "Emma Sharp"
+date: "09/09/2024"
+format: revealjs
+editor: visual
+---
+
+## I love the outdoors!
+
+![Me Hiking in Colorado!](images/IMG_4370.jpg)
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Why Did I Choose Environmental Studies?
+
+-   I care about the environment and want to learn more about it.
+-   I enjoy ecology.
+-   I wanted to learn about interconnected systems in the environment.
+
+## Professional Intrests:
+
+I really enjoy using GIS and R and am interested in doing those types of things as a profession.  I don't entirely know what I'm going to end up doing yet. 
