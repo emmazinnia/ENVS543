@@ -1,19 +1,29 @@
 ---
 title: "Markdown Resume"
 author: "Emma Sharp"
+date: "09/09/2024"
 format: html
 editor: visual
 ---
 
-## About Me:
+## Abstract:
 
 I am a detail-oriented college student with experience in a variety customer-service forward jobs.
 
 ## Experience:
 
-Under the Green Umbrella 
-hello
+Sales Floor Associate at Kohl’s
+
+Summer 2022
+
+-   Assisted an average of 40 customers a day with recommendations on choosing or finding items.
+
+-   Manned and walked the store floor, proactively assisting customers with any questions or concerns they had.
+
+-   Kept up to date in knowledge about new products and promotions to more effectively help customers.
+
+-   Organized, stocked, and replenished merchandise displays and storefront with efficiency and accuracy.
 
 ## Education:
 
-hello...
+Virginia Commonwealth University (2021-2024)
