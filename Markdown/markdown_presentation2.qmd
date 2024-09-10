@@ -5,8 +5,11 @@ date: "09/09/2024"
 format: revealjs
 editor: visual
 ---
+## Growing up:
 
-## I love the outdoors! 
+Growing up, my family was always spending time in the outdoors.  We loved camping, hiking, and simply exploring!  This gave me an appreciation for nature which I still have to this day.  They taught me to appreciate the world around me and that made me want to protect the environment for generations to come.
+
+## I love the outdoors!
 
 ![Me Hiking in Colorado!](images/IMG_4370(1).jpg)
 
