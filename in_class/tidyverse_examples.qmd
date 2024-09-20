@@ -1,0 +1,40 @@
+---
+title: "Tidyverse"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: inline
+---
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+
+url <- "https://docs.google.com/spreadsheets/d/1Mk1YGH9LqjF7drJE-td1G_JkdADOU0eMlrP01WFBT8s/pub?gid=0&single=true&output=csv"
+rice <- read_csv( url )
+names(rice)
+
+#using the pipe operator to make a little tibble (showing average temp by weekday)
+rice %>% 
+  mutate(H2O_Temp = 1.8 * H2O_TempC + 32) %>% #making new column turning C into F
+  select(-H2O_TempC) %>% #unselecting this column (creates tibble)
+  select(DateTime, H2O_Temp, AirTempF, Rain_in) %>% #only selecting these columns
+  mutate(Date = mdy_hms(DateTime, #lubridate, making sure r recognizes date
+                        tz = "EST"), #adds a timezone
+         Weekday = wday(Date, #new column, what day of the week it is
+                        label = T, #name of weeks, not a number
+                        abbr = F)) %>% #do you want weekday names abbreviated?
+  group_by(Weekday) %>% #grouping data by weekday column
+  summarise(`Average H2O Temp` = mean(H2O_Temp, #new table average temp by weekday
+                                  na.rm = T), #get rid of na values
+            `Average Air Temp` = mean(AirTempF),
+            `Total Rain` = sum(Rain_in)) %>%
+  kable() %>% #making it into a fancy table using knitr then kableExtra
+  kable_paper() #you might need kable then kable_theme idk though
+  
+  
+```
+
