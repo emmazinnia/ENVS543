@@ -1,0 +1,63 @@
+---
+title: "Water Quality in Back Bay National Wildlife Refuge"
+author: "Emma Sharp"
+date: "09/29/2024"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Abstract
+
+Abstract shit, do later
+
+## Introduction
+
+The data used in this analysis comes from the U.S. Fish and Wildlife Service. The data shows water conditions at Virginia Beach's Back Bay since the 1990s. Back Bay is a National wildlife preserve in the Virginia Beach area. There are five different collection sites; inside Back Bay itself, A-pool, B-pool, C-pool, and D-pool (used for fishing). The data collected at each test site include; turbidity, dissolved oxygen, pH, salinity, and temperature.
+
+## Methods
+
+i love methods
+
+```{r, include=FALSE}
+water <- read.csv("BKB_WaterQualityData_2020084.csv",
+                stringsAsFactors = T)
+require(tidyverse)
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+table <- water %>% 
+  mutate(Date = mdy(Read_Date),
+         `Site ID` = str_to_title(Site_Id)) %>% 
+  filter(Date >= "1980-12-12") %>% 
+  select(Date,
+         `Site ID`,  
+         Salinity..ppt.,
+         Water.Depth..m.,
+         Water.Temp...C.,
+         AirTemp..C.) %>% 
+  group_by(`Site ID`) %>% 
+  summarise(`Mean Water Temp (C)` = mean(Water.Temp...C.,
+                                       na.rm = T),
+            `Mean Air Temp (C)` = mean(AirTemp..C.),
+            `Mean Salinity (ppt)` = mean(Salinity..ppt.,
+                                         na.rm = T)) %>% 
+  kable() %>% 
+  kable_minimal()
+  
+```
+
+## Results
+
+```{r, echo=FALSE}
+table
+```
+
+describe the results (give titleeee)
+
+## Citation
+
+<https://ecos.fws.gov/ServCat/Reference/Profile/117348>

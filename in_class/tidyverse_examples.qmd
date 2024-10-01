@@ -6,7 +6,6 @@ editor_options:
   chunk_output_type: inline
 ---
 
-
 ```{r}
 library(tidyverse)
 library(lubridate)
@@ -37,4 +36,3 @@ rice %>%
   
   
 ```
-
