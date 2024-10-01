@@ -10,19 +10,19 @@ editor_options:
 
 ## Abstract
 
-Abstract shit, do later
+The Back Bay's water conditions has been monitored for many decades. In this analysis, the difference in water conditions at different sampling sites is looked at. The air temperature was relatively similar throughout the sites.  The water temperature was coldest and most salty in the Bay when compared to the other sampling sites.  
 
 ## Introduction
 
-The data used in this analysis comes from the U.S. Fish and Wildlife Service. The data shows water conditions at Virginia Beach's Back Bay since the 1990s. Back Bay is a National wildlife preserve in the Virginia Beach area. There are five different collection sites; inside Back Bay itself, A-pool, B-pool, C-pool, and D-pool (used for fishing). The data collected at each test site include; turbidity, dissolved oxygen, pH, salinity, and temperature.
+The data used in this analysis comes from the U.S. Fish and Wildlife Service. The data shows water conditions at Virginia Beach's Back Bay since the 1990s (until 2018). Back Bay is a National wildlife preserve in the Virginia Beach area. There are five different collection sites; inside Back Bay itself, A-pool, B-pool, C-pool, and D-pool (used for fishing). The data collected at each test site include; turbidity, dissolved oxygen, pH, salinity, and temperature.
 
 ## Methods
 
-i love methods
+To produce the table below, the date column had mutated to be recognized as a date using lubridate. Then, the data was filtered to only include data collected after 1980 because there was a few miscellaneous data points before then, but they were sporadic. Finally, the data was grouped by the Site ID and an average water temp, air temp, and salinity was found for each site.
 
 ```{r, include=FALSE}
 water <- read.csv("BKB_WaterQualityData_2020084.csv",
-                stringsAsFactors = T)
+stringsAsFactors = T)
 require(tidyverse)
 library(knitr)
 library(kableExtra)
@@ -40,12 +40,13 @@ table <- water %>%
          Water.Temp...C.,
          AirTemp..C.) %>% 
   group_by(`Site ID`) %>% 
-  summarise(`Mean Water Temp (C)` = mean(Water.Temp...C.,
+  summarise(`Mean Air Temp (C)` = mean(AirTemp..C.),
+            `Mean Water Temp (C)` = mean(Water.Temp...C.,
                                        na.rm = T),
-            `Mean Air Temp (C)` = mean(AirTemp..C.),
             `Mean Salinity (ppt)` = mean(Salinity..ppt.,
                                          na.rm = T)) %>% 
-  kable() %>% 
+  kable(caption = "Water Conditions at 
+        Back Bay National Wildlife Preserve") %>% 
   kable_minimal()
   
 ```
@@ -56,7 +57,7 @@ table <- water %>%
 table
 ```
 
-describe the results (give titleeee)
+Throughout all of the sites, the mean air temperature stayed relatively the same, except for the C-pool, which was cooler than the rest of the cites. The mean water temperature throughout the pool sites was relatively similar.  However, the mean water temperature in the Bay itself was cooler than any of the other sites.  This was likely because the pools are smaller masses of water than the Bay, meaning they will heat up quicker than the Bay, which would stay relatively temperate. The salinity was higher in the Bay than any of the pool sites.  The D-pool had the lowest salinity. 
 
 ## Citation
 

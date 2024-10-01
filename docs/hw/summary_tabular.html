@@ -116,15 +116,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="abstract" class="level2">
 <h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
-<p>Abstract shit, do later</p>
+<p>The Back Bay’s water conditions has been monitored for many decades. In this analysis, the difference in water conditions at different sampling sites is looked at. The air temperature was relatively similar throughout the sites. The water temperature was coldest and most salty in the Bay when compared to the pool sampling sites.</p>
 </section>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>The data used in this analysis comes from the U.S. Fish and Wildlife Service. The data shows water conditions at Virginia Beach’s Back Bay since the 1990s. Back Bay is a National wildlife preserve in the Virginia Beach area. There are five different collection sites; inside Back Bay itself, A-pool, B-pool, C-pool, and D-pool (used for fishing). The data collected at each test site include; turbidity, dissolved oxygen, pH, salinity, and temperature.</p>
+<p>The data used in this analysis comes from the U.S. Fish and Wildlife Service. The data shows water conditions at Virginia Beach’s Back Bay since the 1990s (until 2018). Back Bay is a National wildlife preserve in the Virginia Beach area. There are five different collection sites; inside Back Bay itself, A-pool, B-pool, C-pool, and D-pool (used for fishing). The data collected at each test site include; turbidity, dissolved oxygen, pH, salinity, and temperature.</p>
 </section>
 <section id="methods" class="level2">
 <h2 class="anchored" data-anchor-id="methods">Methods</h2>
-<p>i love methods</p>
+<p>To produce the table below, the date column had mutated to be recognized as a date using lubridate. Then, the data was filtered to only include data collected after 1980 because there was a few miscellaneous data points before then, but they were sporadic. Finally, the data was grouped by the Site ID and an average water temp, air temp, and salinity was found for each site.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>table <span class="ot">&lt;-</span> water <span class="sc">%&gt;%</span> </span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">mdy</span>(Read_Date),</span>
@@ -137,13 +137,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>         Water.Temp...C.,</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         AirTemp..C.) <span class="sc">%&gt;%</span> </span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Site ID</span><span class="st">`</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Mean Water Temp (C)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(Water.Temp...C.,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">na.rm =</span> T),</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Mean Air Temp (C)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(AirTemp..C.),</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="st">`</span><span class="at">Mean Air Temp (C)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(AirTemp..C.),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Mean Water Temp (C)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(Water.Temp...C.,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">na.rm =</span> T),</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>            <span class="st">`</span><span class="at">Mean Salinity (ppt)</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">mean</span>(Salinity..ppt.,</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                                         <span class="at">na.rm =</span> T)) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">caption =</span> <span class="st">"Water Conditions at </span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="st">        Back Bay National Wildlife Preserve"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="results" class="level2">
@@ -151,43 +152,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output-display">
 <table class="lightable-minimal caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Water Conditions at Back Bay National Wildlife Preserve</caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;" data-quarto-table-cell-role="th">Site ID</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">Mean Water Temp (C)</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">Mean Air Temp (C)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean Water Temp (C)</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">Mean Salinity (ppt)</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">A</td>
-<td style="text-align: right;">18.60218</td>
 <td style="text-align: right;">15.95940</td>
+<td style="text-align: right;">18.60218</td>
 <td style="text-align: right;">0.3278935</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">B</td>
-<td style="text-align: right;">18.31283</td>
 <td style="text-align: right;">15.80366</td>
+<td style="text-align: right;">18.31283</td>
 <td style="text-align: right;">0.4337650</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Bay</td>
-<td style="text-align: right;">17.47152</td>
 <td style="text-align: right;">15.81069</td>
+<td style="text-align: right;">17.47152</td>
 <td style="text-align: right;">1.4851552</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">C</td>
-<td style="text-align: right;">18.21660</td>
 <td style="text-align: right;">15.01410</td>
+<td style="text-align: right;">18.21660</td>
 <td style="text-align: right;">0.5963968</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">D</td>
-<td style="text-align: right;">18.27788</td>
 <td style="text-align: right;">15.49223</td>
+<td style="text-align: right;">18.27788</td>
 <td style="text-align: right;">0.0998568</td>
 </tr>
 </tbody>
@@ -196,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </div>
 </div>
-<p>describe the results (give titleeee)</p>
+<p>Throughout all of the sites, the mean air temperature stayed relatively the same, except for the C-pool, which was cooler than the rest of the cites. The mean water temperature throughout the pool sites was relatively similar. However, the mean water temperature in the Bay itself was cooler than any of the other sites. This was likely because the pools are smaller masses of water than the Bay, meaning they will heat up quicker than the Bay, which would stay relatively temperate. The salinity was higher in the Bay than any of the pool sites. The D-pool had the lowest salinity.</p>
 </section>
 <section id="citation" class="level2">
 <h2 class="anchored" data-anchor-id="citation">Citation</h2>
