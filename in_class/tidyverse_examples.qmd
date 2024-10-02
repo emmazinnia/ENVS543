@@ -35,4 +35,6 @@ rice %>%
   kable_paper() #you might need kable then kable_theme idk though
   
   
+
+get_rice_data()
 ```
