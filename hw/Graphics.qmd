@@ -1,0 +1,196 @@
+---
+title: "Graphics"
+author: "Emma Sharp"
+date: "10/08/2024"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#| include: F
+#| warning: F
+source("get_rice_data.R")
+rice <- get_rice_data()
+```
+
+## Total Rain for Each Weekday in January:
+
+```{r}
+df1 <- rice %>% 
+  filter(Month == "January") %>% 
+  group_by(Weekday) %>% 
+  summarise(`Total Rain (cm)` = sum(Rain_cm))
+
+barplot(df1$`Total Rain (cm)`,
+        names.arg = df1$Weekday,
+        ylab = "Rain (cm)",
+        xlab = "Day of the Week",
+        cex.names = 0.8,
+        main = "Total Rain by Weekday in January",
+        col = "lightblue")
+
+df1 %>% 
+  ggplot(aes(x = Weekday,
+             y = `Total Rain (cm)`)) +
+  geom_col(fill = "lightblue")+
+  labs(x = "Day of the Week",
+       title = "Total Rain by Weekday in January")
+
+```
+
+## Average Daily Temperature for Weekdays in February:
+
+```{r}
+df2 <- rice %>% 
+  filter(Month == "February") %>% 
+  group_by(Weekday) %>% 
+  summarise(`Average Daily Temp (C)` = mean(AirTempC))
+
+barplot(df2$`Average Daily Temp (C)`,
+        names.arg = df2$Weekday,
+        ylab = "Temp (C)",
+        xlab = "Day of the Week",
+        cex.names = 0.8,
+        main = "Average Tempature by Weekday in February",
+        col = "pink")
+
+df2 %>% 
+  ggplot(aes(x = Weekday,
+             y = `Average Daily Temp (C)`))+
+  geom_col(fill = "pink")+
+  labs(x = "Day of the Week",
+       title = "Average Tempature by Weekday in February")
+  
+```
+
+## Water Depth on Valentine's Day:
+
+```{r}
+df3 <- rice %>% 
+  mutate(Date2 = date(Date)) %>% 
+  filter(Date2 == "2014-02-14") 
+
+plot(df3$Date,
+     df3$Depth_m,
+     xlab = "Date Time",
+     ylab = "Depth (m)",
+     main = "Water Depth on Valentine's Day",
+     col = "red",
+     pch = 20)
+
+df3 %>% 
+  ggplot(aes(x = Date,
+             y = Depth_m))+
+  geom_line(color = "red",
+            linewidth = 1.5)+
+  labs(x = "Date Time",
+       y = "Depth (m)",
+       title = "Water Depth on Valentine's Day")
+```
+
+## Scatter Plot of Daily Total Rain and Daily Median Temperature grouped by month (label the centroid of months).
+
+```{r}
+df4 <- rice %>% 
+  mutate(Date2 = date(Date)) %>% 
+  group_by(Date2) %>% 
+  summarise(`Daily Total Rain (cm)` = sum(Rain_cm),
+            `Daily Median Tempature (C)` = median(AirTempC)) %>% 
+  mutate(Month = month(Date2,
+                       label = T))
+
+centroid1 <- df4 %>% 
+  group_by(Month) %>% 
+  summarise(`Daily Total Rain (cm)` = mean(`Daily Total Rain (cm)`),
+            Date2 = mean(Date2),
+            name = "Average Rain")
+
+centroid2 <- df4 %>% 
+  group_by(Month) %>% 
+  summarise(`Daily Median Tempature (C)` = mean(`Daily Median Tempature (C)`),
+            Date2 = mean(Date2),
+            name = "Average Temp")
+
+plot(df4$Date2,
+     df4$`Daily Total Rain (cm)`,
+     xlab = "Date",
+     ylab = "Daily Total Rain (cm)",
+     pch = 18,
+     col = "darkgreen",
+     main = "Daily Total Rain (green) & Daily Median Tempature (Red)")
+text(2014-01-16,
+     0.202,
+     "Average Rain")
+par(new = T)
+plot(df4$Date2,
+     df4$`Daily Median Tempature (C)`,
+     axes = F,
+     xlab = "",
+     ylab = "",
+     pch = 20,
+     col = "red")
+axis(4, col = "black")
+mtext("Daily Median Tempature (C)",
+      side = 4,
+      line = -1)
+
+df4 %>% 
+  ggplot(aes(x = Date2))+
+  geom_point(aes(y = `Daily Total Rain (cm)`,
+                 color = Month))+
+  geom_line(aes(y = `Daily Median Tempature (C)`,
+                color = Month),
+            linewidth = 0.8)+
+  scale_y_continuous(name = "Daily Total Rain (cm)",
+                     sec.axis = sec_axis(transform = ~.*1, 
+                                      name = "Daily Median Temp (C)"))+
+  labs(x = "Date",
+       title = "Daily Total Rain (points) & Daily Median Tempatures (Line)")+
+  geom_text( aes(label = name,
+                 x = Date2,
+                 y = `Daily Total Rain (cm)`), 
+             data = centroid1)+
+  geom_text( aes(label = name,
+                 x = Date2,
+                 y = `Daily Median Tempature (C)`), 
+             data = centroid2)+
+  scale_color_manual(values = c("pink","lightblue","orange"))+
+  theme_bw()
+```
+
+## Wind Direction During the Week Containing the 8th of January:
+```{r}
+df5 <- rice %>% 
+  mutate(Date2 = date(Date)) %>% 
+  filter(Date2 >= "2014-01-05" &
+           Date2 <= "2014-01-11") %>% 
+  mutate(`Wind Direction` = ifelse(WindDir <= 45,
+                   "North",
+                   ifelse(WindDir <= 135,
+                          "East",
+                          ifelse(WindDir <= 225,
+                                 "South",
+                                 ifelse(WindDir <=335,
+                                        "West",
+                                        "North"))))) %>% 
+  select(Date, WindDir, `Wind Direction`)
+         
+plot(df5$Date,
+     df5$WindDir,
+     xlab = "Date",
+     ylab = "Wind Direction",
+     main = "Wind Direction From January 5th-11th",
+     col = "lightgreen",
+     pch = 20)
+
+
+df5 %>% 
+  ggplot(aes(x = Date,
+             y = WindDir,
+             color = `Wind Direction`))+
+  geom_point()+
+  labs(y = "Wind Direction",
+       title = "Wind Direction From January 5th-11th")
+```
+
