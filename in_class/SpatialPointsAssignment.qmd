@@ -1,5 +1,7 @@
 ---
 title: "In Class Activity"
+author: "Emma Sharp"
+date: "10-16-2024"
 format: 
   html:
     code-tools: true
@@ -69,6 +71,9 @@ There is a great tutorial [here](https://rstudio.github.io/leaflet/map_widget.ht
 # make a quick leaflet map here to get an idea of 
 library(leaflet)
 library(tidyverse)
+library(sf)
+library(units)
+library(rnaturalearth)
 
 beetle %>% 
   mutate(Label = paste("Site:", Site,
@@ -88,7 +93,6 @@ Convert the spatial data in the beetle data.frame into an `sf` object.  Make sur
 ```{r}
 #| warning: F
 # convert raw data to simple features in your data.frame
-library(sf)
 
 beetle <- beetle %>% 
   st_as_sf(coords = c("Longitude", "Latitude"),
@@ -102,39 +106,74 @@ For these questions, you may want to look at the `sf` cheat sheet [here](https:/
 
 1. How far apart (in km) are the sites Constitución (`const`) and San Francisquito (`sfran`)?  
 
+The distance between the sites Constitución and San Francisquito is 290.09 kilometers.
+
 ```{r}
-beetle %>% 
-  st_distance()
+dist_mat <- beetle %>% 
+  filter(Site == "const" |
+           Site == "sfran")
+
+dist_mat <- st_distance(dist_mat$geometry,
+                        dist_mat$geometry)
+dist_mat %>% 
+  set_units(km)
 ```
+
 
 2. Is there a correlation between habitat suitability and the ratio of males to female beetles sampled at each locale?  
 
+There is a significant negative relationship between the habitat suitability and the ratio of males to females (p = 0.03).  The relationship is moderately strong, with a correlation of -0.40.
+
 ```{r}
+corr <- cor.test(beetle$Suitability,
+                 beetle$MFRatio)
+corr
 ```
 
 3. Make a plot using `ggplot` of the data with suitability as the size of the points and the sex ratio as the fill color.
 
 ```{r}
+map <- ne_countries(scale = "medium",
+                    returnclass = "sf") 
+
+beetle %>% 
+  ggplot()+
+  geom_sf(data = map)+
+  geom_sf(aes(size = Suitability,
+              color = MFRatio))+
+  scale_color_gradient(low = "hotpink",
+                       high = "dodgerblue")+
+  labs(color = "Males:Females",
+       x = "Longitude",
+       y = "Latitude",
+       title = "Habitat Suitability and Ratio of Males to Females in Mexico")+
+  theme_classic()+
+  coord_sf(xlim = c(-115, -109),
+           ylim = c(23, 30))
 ```
 
 4. Reproject the data and plot it again using an EPSG code defined for Mexico UTM zone 12N (see [epgs.io](https://epsg.io) for projections).
 
 ```{r}
+beetle_utm <- beetle %>% 
+  st_transform(4485)
+
+map_utm <- map %>% 
+  st_transform(4485)
+
+beetle_utm %>% 
+  ggplot()+
+  geom_sf(data = map_utm)+
+  geom_sf(aes(size = Suitability,
+              color = MFRatio))+
+  scale_color_gradient(low = "hotpink",
+                       high = "dodgerblue")+
+  labs(color = "Males:Females",
+       x = "Longitude",
+       y = "Latitude",
+       title = "Habitat Suitability and Ratio of Males to Females in Mexico")+
+  theme_classic()+
+  coord_sf(xlim = c(180128.0, 666529.7),
+           ylim = c(2575408.2, 3248545.0))
 ```
-
-
-
-```{r}
-#| echo: false
-cor.response <- cor.test( iris$Petal.Length, iris$Sepal.Width)
-```
-
-
-
-
-
-
-
-
-
 
