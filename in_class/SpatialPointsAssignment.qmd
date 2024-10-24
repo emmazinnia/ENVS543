@@ -56,7 +56,8 @@ The data for this is some site-level data from the Sonoran Desert bark beetle.  
 ```{r}
 url <- "https://raw.githubusercontent.com/dyerlab/ENVS-Lectures/master/data/Araptus_Disperal_Bias.csv"
 
-beetle <- read.csv(url)
+library(readr)
+beetle <- read_csv(url)
 ```
 
 

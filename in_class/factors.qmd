@@ -1,0 +1,90 @@
+---
+title: "Factors In Class Activity"
+author: "Emma Sharp"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#| include: FALSE
+source("get_rice_data.R")
+rice <- get_rice_data()
+library(lunar)
+library(forcats)
+library(kableExtra)
+```
+
+## Change the Order of the Weekdays to Start With Monday:
+
+```{r}
+rice %>% 
+  mutate(Weekday = fct_shift(Weekday, 1)) %>% 
+  group_by(Weekday) %>% 
+  summarise(`Average Rain (cm)` = mean(Rain_cm)) %>% 
+  kable() %>% 
+  column_spec(2:1,
+              width_min = 5)
+```
+
+## Add Weekday/Weekend Based on the Day of the Week:
+
+```{r}
+rice$`Day or End` <- fct_collapse(rice$Weekday,
+                                  Weekdays = c("Monday", "Tuesday",
+                                              "Wednesday", "Thursday",
+                                              "Friday"),
+                                  Weekends = c("Saturday", "Sunday"))
+rice %>% 
+  group_by(`Day or End`) %>% 
+  ggplot(aes(x = `Day or End`,
+             y = AirTempC))+
+  geom_boxplot(fill = "pink")+
+  labs(y = "Air Temp (C)",
+       title = "Air Temp on Weekends and Weekdays")
+```
+
+## Create a Column Based on the *Four Primary Lunar Phases*:
+
+```{r}
+rice <- rice %>% 
+  mutate(`Lunar Phase` = lunar.phase(Date,
+                                     name = T))
+
+rice %>%   
+  filter(Month == "March") %>% 
+  group_by(`Lunar Phase`) %>%
+  ggplot(aes(x = `Lunar Phase`,
+             y = Day,
+             fill = `Lunar Phase`))+
+  geom_boxplot()+
+  labs(y = "Day of Month",
+       title = "Lunar Phases in March")+
+  coord_flip()+
+  guides(fill = "none")+
+  scale_fill_manual(values = c("black","darkgrey","white","darkgrey"))+
+  theme_minimal()
+```
+
+## [Superstar Question] Create a Column That Indicates Whether the Tide is Coming in (Incoming) or Going Out (Outgoing):
+
+```{r}
+rice %>%
+  arrange(Date) %>% 
+  mutate(Diff = Depth_m - lag(Depth_m,
+                              default = first(Depth_m)),
+         Tide = ifelse(Diff > 0,
+                       "Incoming",
+                       "Outgoing")) %>% 
+  filter(Dates == "2014-01-02" |
+           Dates == "2014-01-03") %>% 
+  ggplot(aes(x = Date,
+             y = Depth_m,
+             colour = Tide))+
+  geom_point(size = 3)+
+  labs(y = "Depth (m)",
+       title = "Tides on January 2nd and 3rd")+
+  scale_color_manual(values = c("purple","red"))+
+  theme_classic()
+```
+

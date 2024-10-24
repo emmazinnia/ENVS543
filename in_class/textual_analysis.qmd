@@ -1,0 +1,128 @@
+---
+title: "Textual Analysis"
+author: "Emma Sharp"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+## Textual Data:
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(readr)
+
+url <- "https://raw.githubusercontent.com/DyerlabTeaching/Textual-Data/refs/heads/main/data/ENVSclasses.txt?token=GHSAT0AAAAAACWO27UIA46V72P7DBZEP5EKZYZFFXQ"
+```
+
+```{r}
+x <- "Emma"
+y <- "Sharp"
+z <- 'Bob Marley once said, "It is a foolish dog who barks at a passing bird."'
+#use single or double quotes, but if you have a " or ' inside, use the opposite to surround it 
+w <- "'Coding is fun!' said Dyer."
+x
+y
+print(z)
+cat(z) #concatenate, doesn't have \"
+```
+
+## Creating Text Variables & Basic Functions (paste, length):
+```{r}
+paste("bob", "is", "not", "here", sep = "*") #default separator is a space
+paste("my fav num is ", 42, "!", sep = "")
+
+length(z) 
+nchar(z) #how many characters is in my text variable
+str_length(z) #how many characters are in my text variable with stringr
+
+vector <- c(w, x, y, z)
+vector
+length(vector)
+nchar(vector)
+str_length(vector)
+
+a <- 1:10
+paste(a) #creates another vector, doens't know what to paste vector to
+paste(a, collapse = ", ") #collapses vector into a string of characters (one element)
+
+b <- LETTERS[1:10]
+paste(a, b, sep = "-")
+paste(a, b, collapse = "*")
+str_c(a, b) #same but with stringr
+```
+
+## Finding Things in Strings:
+
+```{r}
+str_detect(z, "Marley") #where you are searching, what you are searching for
+
+str_count(z, "a") #where you are searching, what you're trying to count occurrences of
+
+str_locate(z, "dog") #where you are searching, what you want to find the location of
+```
+
+## Substituting & Deleting & Other Edits:
+
+```{r}
+str_sub(z, 24, -2) #pulls out from z, where you are pulling, start position, end position (-2 means two from the end)
+c <- z
+str_sub(c, 24, -2) <- "hey" #what you are substituting out <- what you are putting in its place
+c
+
+str_remove(z, " dog")
+
+str_trunc(z, 23) #puts ... after 23 values (doesn't show everything not deleting)
+
+#changing cases; str_to_ lower, upper, sentence, or title
+
+str_sub(z, 23, 25) #what characters are located from 23-25 in z
+```
+
+## Regular Expressions:
+
+1.  Make a graphical display of the number of courses in ENVS by course level (100, 200, 300, etc...).
+2.  Make a wordcloud from the titles.
+
+```{r}
+envs <- read_lines(url) #each line is a new thing in a vector
+head(envs, 25)
+
+idx <- str_detect(envs, "ENVS")
+envs[idx] #only shows lines that are true (contain ENVS)
+
+#pattern matching (hooray)
+
+envs101 <- envs[1]
+envs101
+
+str_view(envs101, "ENVS") #shows us where things are matching
+str_view(envs101, "Hou")
+str_view(envs101, "i")
+
+#searching/viewing (if nothing matches, no output)
+
+str_view(envs101, "[:digit:]") #matches with any numerical digit 
+str_view(envs101, "[:digit:]{3}") #finding three digits in a row
+str_view(envs101, "[:digit:]{2,3}") #finds two or three
+
+str_view(envs101, "[:punct:]") #finds any punctuation like . or !
+
+str_view(envs101, "[:alpha:]") #finds letters
+
+str_view(envs101, "[:lower:]") #or use upper to find upper case
+
+str_view(envs101, "[:space:]") #finding spaces
+
+#adding them together & anchors
+
+str_view(envs101, "[:upper:]{4} [:digit:]{3}" ) #four uppercase letters followed by a space followed by three digits
+str_view(envs101, "[A-Z]{4} [0-9]{3}") #does same thing but shorthanded ;p
+
+str_view(envs101, "^[A-Z]{4} [0-9]{3}") #anchors this to the beginning, only brings back if this is at the very start of a line
+str_view(envs101, "[0-9] Hour|s.$") #anchors this to the end of the line, the pipe means that the next character is optional (would bring back Hour instead of Hours)
+
+str_view(envs101, "^[A-Z]{4} [0-9]{3}.+[0-9] Hour|s.$") # .+ will match anything
+```
+
