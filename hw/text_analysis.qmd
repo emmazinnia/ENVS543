@@ -1,0 +1,91 @@
+---
+title: "Textual Analysis Homework"
+author: "Emma Sharp"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#| include: false
+
+library(tidyverse)
+library(stringr)
+library(readr)
+library(wordcloud2)
+library(tm)
+
+url <- "https://raw.githubusercontent.com/DyerlabTeaching/Textual-Data/refs/heads/main/data/ENVSclasses.txt?token=GHSAT0AAAAAACWO27UIA46V72P7DBZEP5EKZYZFFXQ"
+
+envs <- read_lines(url)
+```
+
+## Plot the number of courses at the 100, 200, 300, and 400-level grouped by program.
+
+```{r}
+pattern <- "^[A-Z]{4} [0-9]{3}.+[0-9] Hour[s]?\\.$" 
+idx <- grepl(pattern,
+             envs)
+envs2 <- envs[idx]
+
+split <- str_split(envs2,
+                   simplify = T,
+                   pattern = "\\.")
+
+data.frame(Course = split[,1],
+           Title = split[,2], 
+           Hours = split[,3]) %>% 
+  mutate(Hours = str_remove(Hours, "Hours"),
+         Hours = str_remove(Hours, "Hour"),
+         Hours = gsub("1-4", "4", Hours),
+         Hours = as.numeric(gsub("1-3", "3", Hours)),
+         Program = str_split(Course, " ", simplify = T)[,1],
+         Number = as.numeric(str_split(Course, " ", simplify = T)[,2]),
+         Level = as.numeric(ifelse(Number >= 400,
+                        "400",
+                        ifelse(Number >= 300,
+                               "300",
+                               ifelse(Number >= 200,
+                                      "200",
+                                      "100"))))) %>% 
+  select(Program, Number, Title, Hours, Level) -> hey
+
+hey %>% 
+  group_by(Program, Level) %>% 
+  summarise(Count = length(Level)) %>% 
+  ggplot(aes(x = Level,
+             y = Count,
+             fill = Program))+
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(title = "Number of Classes by Progam at 100, 200, 300, and 400 Level")+
+  scale_fill_manual(values = c("pink", "lightblue"))+
+  theme_classic()
+```
+
+## Make a wordcloud based upon all course titles. 
+
+```{r}
+hey %>% 
+  select(Title) %>% 
+  TermDocumentMatrix() %>% 
+  as.matrix() -> oh
+words <- sort(rowSums(oh),
+              decreasing = TRUE) 
+df <- data.frame(word = names(words),
+                 freq = words)
+df <- df %>% 
+  mutate(word = gsub(',', '', word),
+         word = gsub('"', '', word),
+         word = gsub(")", "", word),
+         word = gsub(":", "", word)) %>% 
+  filter(word != "and",
+         word != "the",
+         word != "c(",
+         word != "i",
+         word != "ii")
+
+set.seed(4321)
+wordcloud2(df,
+           size = 0.5)
+```
+

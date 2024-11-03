@@ -124,5 +124,28 @@ str_view(envs101, "^[A-Z]{4} [0-9]{3}") #anchors this to the beginning, only bri
 str_view(envs101, "[0-9] Hour|s.$") #anchors this to the end of the line, the pipe means that the next character is optional (would bring back Hour instead of Hours)
 
 str_view(envs101, "^[A-Z]{4} [0-9]{3}.+[0-9] Hour|s.$") # .+ will match anything
+
+pattern <- "^[A-Z]{4} [0-9]{3}.+[0-9] Hour[s]?\\.$" #[]? means there is 0 or 1 of them, so hour is included too
+
+#applying our pattern to every single line to pull out the shit we want (kind of like filtering)
+
+idx <-grepl(pattern, #for every row, gives you true or false (does line match your pattern)
+      envs)
+titles <- envs[idx] #returns every line for when idx is true
+titles
+
+#now we need to separate the three sections (splitting with period)
+raw <- str_split(titles,
+          simplify = T, #returns our data in a matrix type thing idk
+          pattern = "\\.") #using \\ to escape the period's meaning in stringr
+
+data <- data.frame(course = raw[,1],
+                   title = str_trim(raw[,2]), #trimming space (white space) on edges
+                   hours = str_trim(raw[,3])) %>% 
+  mutate(hours = str_remove(hours, "Hours")) %>% #removing something (where you are pulling from, then what your are removing?)
+  mutate(hours = as.numeric(str_remove(hours, "Hour"))) %>% #makes n/a for some values because some were 1-4 credits
+  mutate(program = str_split(course, " ", simplify = T)[,1]) %>% #pulling out program, where you are pulling from, what you are splitting by, makes matrix, pulling from first column
+  mutate(number = as.numeric(str_split(course, " ", simplify = T)[,2])) %>% 
+  select(program, number, title, hours)
 ```
 

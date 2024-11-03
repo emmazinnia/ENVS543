@@ -7,6 +7,7 @@ editor: visual
 editor_options: 
   chunk_output_type: console
 ---
+
 ```{r}
 #| include: F
 #| warning: F
@@ -160,6 +161,7 @@ df4 %>%
 ```
 
 ## Wind Direction During the Week Containing the 8th of January:
+
 ```{r}
 df5 <- rice %>% 
   mutate(Date2 = date(Date)) %>% 
@@ -193,4 +195,3 @@ df5 %>%
   labs(y = "Wind Direction",
        title = "Wind Direction From January 5th-11th")
 ```
-

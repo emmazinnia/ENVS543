@@ -1,0 +1,107 @@
+---
+title: "Rasters"
+author: "Emma Sharp"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+1. Load the raster and point data in and crop to an appropriate size to display the locations of the sampling plots and make a label for each site.
+
+```{r}
+#| include: false
+library(raster)
+library(readr)
+library(sf)
+library(tidyverse)
+library(ggrepel)
+
+raster_url <- "https://github.com/DyerlabTeaching/Raster-Data/raw/main/data/alt_22.tif"
+beetle_url <- "https://raw.githubusercontent.com/DyerlabTeaching/Raster-Data/main/data/AraptusDispersalBias.csv"
+```
+
+```{r}
+#| warning: false
+raster <- raster(raster_url)
+beetle <- read_csv(beetle_url) %>% 
+  st_as_sf(coords = c("Longitude", "Latitude"),
+           crs=4326)
+
+bbox <- c(-116, -109, 22, 30)
+extent <- extent(bbox)
+raster <- crop(raster, extent)
+
+raster %>%
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Elevation = alt_22) %>% 
+  ggplot()+ 
+  geom_raster(aes(x = Longitude, 
+                  y = Latitude,
+                  fill = Elevation))+
+  geom_sf(data = beetle,
+          col = "red")+
+  theme_minimal()+
+  geom_text_repel(aes(label = Site,
+                      geometry = geometry),
+                  data = beetle,
+                  stat = "sf_coordinates", 
+                  size = 4,
+                  col = "red")+
+  labs(title = "Beetle Observations in Mexico")
+```
+
+2. Use the click() function to crop and filter the sites to include only the sampling locations that are in the Cape regions (e.g., south of site labeled #75).  Plot the raster of elevation and all cape region locales with sex-ratio represented as the size of the plot symbol.
+
+```{r}
+#| warning: false
+plot(raster)
+plot(beetle, add = T, col = "red")
+
+point <- click(raster,
+               xy = T,
+               value = T,
+               n = 1) 
+point
+
+bbox2 <- c(-116, -109, 22, 24.8)
+extent2 <- extent(bbox2)
+cropped <- crop(raster, extent2)
+
+beet_crop <- st_crop(beetle,
+                     c(xmin = -116, xmax = -109, ymin = 22, ymax = 24.8))
+
+cropped %>% 
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Elevation = alt_22) %>% 
+  ggplot()+
+  geom_raster(aes(x = Longitude, 
+                  y = Latitude,
+                  fill = Elevation))+
+  scale_fill_gradient(low = "lightblue",
+                      high = "orange")+
+  geom_sf(data = beet_crop,
+          aes(size = MFRatio))+
+  labs(title = "Beetles in the Cape Region",
+       size = "Males:Females")
+```
+
+
+3. The peninsula of Baja California is divided into the States of Baja California Norte and Baja California Sur. The border between these states is at 28° Latitude. Divide the sample locations into groups based on which state they are located in and plot the average sex ratio of the sample sites partitioned by each site.  
+
+```{r}
+
+```
+
+4. Is there a relationship between the observed sex ratio and the elevation at that site?  Plot these, and in the text, perform a correlation test (cor.test()) and report the values as if you were writing them up in a results section.
+
+```{r}
+
+```
+
