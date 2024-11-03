@@ -84,7 +84,7 @@ df <- df %>%
          word != "i",
          word != "ii")
 
-set.seed(4321)
+set.seed(1234)
 wordcloud2(df,
            size = 0.5)
 ```
