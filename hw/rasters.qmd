@@ -2,6 +2,7 @@
 title: "Rasters"
 author: "Emma Sharp"
 format: html
+date: "11/04/2024"
 editor: visual
 editor_options: 
   chunk_output_type: console
@@ -96,12 +97,57 @@ cropped %>%
 3. The peninsula of Baja California is divided into the States of Baja California Norte and Baja California Sur. The border between these states is at 28° Latitude. Divide the sample locations into groups based on which state they are located in and plot the average sex ratio of the sample sites partitioned by each site.  
 
 ```{r}
+#| warning: false
+norte <- beetle %>% 
+  st_crop(c(xmin = -116, xmax = -109, 
+            ymin = 28, ymax = 30)) %>% 
+  mutate(State = "Norte")
+sur <- beetle %>% 
+  st_crop(c(xmin = -116, xmax = -109, 
+            ymin = 22, ymax = 28)) %>% 
+  mutate(State = "Sur")
 
+raster %>% 
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Elevation = alt_22) %>% 
+  ggplot()+
+  geom_raster(aes(x = Longitude, 
+                  y = Latitude,
+                  fill = Elevation))+
+  geom_sf(data = norte,
+          col = "green",
+          aes(size = MFRatio))+
+  geom_sf(data = sur,
+          col = "orange",
+          aes(size = MFRatio))+
+  labs(title = "Male:Female Ratios in Baja California Norte (Green) \nand Baja California Sur (Orange)",
+       size = "Males:Females")
 ```
 
 4. Is there a relationship between the observed sex ratio and the elevation at that site?  Plot these, and in the text, perform a correlation test (cor.test()) and report the values as if you were writing them up in a results section.
 
 ```{r}
+sites <- beetle$geometry
+raster::extract(raster,
+                as(sites,"Spatial")) -> beetle$elevation
 
+beetle %>% 
+  ggplot(aes(x = elevation,
+             y = MFRatio))+
+  geom_point()+
+  labs(x = "Elevation (m)",
+       y = "Males:Females",
+       title = "Ratio of Males to Females at Differing Elevations")+
+  theme_light()
+
+elevation <- beetle$elevation
+MFRatio <- beetle$MFRatio
+
+cor.test(elevation,
+         MFRatio)
 ```
 
+The correlation test run on the sex ratio and elevation showed a weak negative relationship between the two (cor = -0.1).  However, the correlation test did not find a significant p-value (p=0.58).  Therefore, we cannot conclude that the sex ratio and elevation are correlated.
