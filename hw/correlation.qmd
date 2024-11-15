@@ -1,0 +1,87 @@
+---
+title: "Correlations"
+author: "Emma Sharp"
+format: html
+editor: visual
+date: "11/08/2024"
+editor_options: 
+  chunk_output_type: console
+---
+## Correlation Assignment:
+
+```{r}
+#| include: false
+source("get_rice_data.R")
+rice <- get_rice_data()
+library(GGally)
+library(tidyverse)
+```
+
+1. Look up the library GGally; it has a function named ggpairs(). Use that function to plot the atmospheric data from the Rice Rivers Center for the samples collected from 10 February to 15 February.  
+
+```{r}
+rice %>% 
+  filter(Date >= "2014-02-10 00:00:00" &
+           Date <= "2014-02-15 24:60:60") -> rice2
+  
+rice2 %>% 
+  select(AirTempC, WindSpeed_mph, Rain_cm, RelHumidity, BP_HG) %>% 
+  ggpairs()
+```
+
+2. For those atmospheric data, which pair of variables has the strongest correlation? What is the 95% confidence interval on that correlation coefficient?
+
+Barometric pressure and air temperature had the strongest correlation at -0.692.  The 95% confidence interval on that correlation coefficient is -0.736 to -0.642.
+
+```{r}
+cor.test(rice2$AirTempC, rice2$BP_HG)
+```
+
+
+3. Using the first 40 observations in air temperature and barometric pressure from the Rice Center data set, determine if they are individually distributed as normal random variables.  
+
+```{r}
+heads <- head(rice, 40) 
+
+hist(heads$AirTempC)
+shapiro.test(heads$AirTempC) #air temp is normally distributed
+
+hist(heads$BP_HG)
+shapiro.test(heads$BP_HG) #barometric pressure isn't normally distributed 
+```
+
+4. Given your findings in the last question, what kind of correlation statistic would be most appropriate for estimating the correlation between this subset of data?
+
+Because the barometric pressure isn't normally distributed, the correlation statistic most appropriate would be the Spearman's Rho test.  You could also use a permutation.
+
+5. Look at a qqnorm() plot of the barometric pressure data you used in the previous example. Is there something that "looks" odd with these data? Explain why those data are the way they are. 
+
+It looks like the data trails off at the edge of the graph instead of staying close to the line.  This could be because of the way the data is distributed.
+
+```{r}
+qqnorm(heads$BP_HG)
+qqline(heads$BP_HG, col = "red")
+```
+
+6. Using a permutation approach, define the distribution of correlation values between the variables in #3, assuming that the NULL hypothesis is true. Plot these as a histogram and include the observed correlation.
+
+```{r}
+df <- data.frame(Estimate = factor(c("Original",
+                                     rep("Permuted", 999))), 
+                 rho = c(cor.test(heads$AirTempC, heads$BP_HG)$estimate,
+                         rep(NA, 999)))
+
+for( i in 2:1000) {
+  yhat <- sample(heads$BP_HG,
+                 size = length(heads$BP_HG),
+                 replace = FALSE)
+  model <- cor.test(heads$AirTempC, yhat)
+  df$rho[i] <- model$estimate 
+}
+
+ggplot(df)+
+  geom_histogram(aes(rho,
+                     fill = Estimate))
+```
+
+Because the original is outside of the 95% percentile of the permutated values, there is enough evidence to reject the null hypothesis.

@@ -22,7 +22,7 @@ get_rice_data <- function() {
     mutate(AirTempC = (AirTempF - 32) * (5/9),
            Rain_cm = Rain_in * 2.54) %>% 
     #get rid of extra data/reorder columns
-    select(Date, AirTempC, H2O_TempC, WindSpeed_mph, WindDir, Depth_m, PH, 
-           Salinity_ppt, Turbidity_ntu, ODO_mgl, Rain_cm, Month, Day, Weekday)
+    select(Date, AirTempC, H2O_TempC, WindSpeed_mph, WindDir, Depth_m, PH, BP_HG,
+           Salinity_ppt, Turbidity_ntu, ODO_mgl, Rain_cm, Month, Day, Weekday, RelHumidity)
 }
 

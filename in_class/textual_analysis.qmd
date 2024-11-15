@@ -6,6 +6,7 @@ editor: visual
 editor_options: 
   chunk_output_type: console
 ---
+
 ## Textual Data:
 
 ```{r}
@@ -29,6 +30,7 @@ cat(z) #concatenate, doesn't have \"
 ```
 
 ## Creating Text Variables & Basic Functions (paste, length):
+
 ```{r}
 paste("bob", "is", "not", "here", sep = "*") #default separator is a space
 paste("my fav num is ", 42, "!", sep = "")
@@ -149,3 +151,8 @@ data <- data.frame(course = raw[,1],
   select(program, number, title, hours)
 ```
 
+## Word Clouds:
+
+```{r}
+#idk look at homework
+```
