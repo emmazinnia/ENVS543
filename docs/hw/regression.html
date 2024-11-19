@@ -103,7 +103,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p><img src="media/models.png" class="img-fluid"></p>
 <p>Since regression analysis is such a fundamental component of inferences, I thought it would be a good idea to try to work through a few more examples to give you some more practice.</p>
 <p>For this we will use some data on flights into and out of Newark (EWR), JFK, and La Guardia airports in NYC metropolitan area.</p>
 <div class="cell">
@@ -280,6 +279,358 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="activity" class="level1">
 <h1>Activity</h1>
 <p>What features of this data set may impact the departure delay for flights coming out of JFK on <em>ExpressJet</em> Airlines?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Wind Speed (because the residuals aren't normal, we fail to reject the null hypothesis that there isn't a relationship between wind speed and departure delay)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>wspd <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wind_speed, <span class="at">data =</span> df)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wspd) <span class="co">#p = 0.01, r^2 = 0.003, F = 6, DF= 1, 1321</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ wind_speed, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-43.64 -25.03 -19.65  -2.84 521.42 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)   
+(Intercept)  10.7333     3.5522   3.022  0.00256 **
+wind_speed    0.6677     0.2726   2.449  0.01445 * 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.99 on 1321 degrees of freedom
+  (83 observations deleted due to missingness)
+Multiple R-squared:  0.00452,   Adjusted R-squared:  0.003767 
+F-statistic: 5.998 on 1 and 1321 DF,  p-value: 0.01445</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wspd, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals aren't normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>wind_speed_adj <span class="ot">&lt;-</span> <span class="fu">asin</span>(<span class="fu">sqrt</span>(df<span class="sc">$</span>wind_speed <span class="sc">/</span> <span class="fl">100.0</span>))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>wspd_adj <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wind_speed_adj, <span class="at">data =</span> df)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wspd_adj) <span class="co">#p = 0.04, r^2 = 0.002, F = 4.4, DF = 1, 1321</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ wind_speed_adj, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-40.79 -25.25 -20.22  -2.52 520.56 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)       7.497      5.520   1.358   0.1746  
+wind_speed_adj   32.803     15.698   2.090   0.0368 *
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 56.03 on 1321 degrees of freedom
+  (83 observations deleted due to missingness)
+Multiple R-squared:  0.003295,  Adjusted R-squared:  0.00254 
+F-statistic: 4.367 on 1 and 1321 DF,  p-value: 0.03684</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wspd_adj, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals still aren't normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ws <span class="ot">&lt;-</span> <span class="fu">test_boxcox</span>(df<span class="sc">$</span>wind_speed)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>wspd_lamb <span class="ot">&lt;-</span> ((df<span class="sc">$</span>wind_speed <span class="sc">^</span> <span class="fl">0.76</span>) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fl">0.76</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>wspd_lam <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wspd_lamb, <span class="at">data =</span> df)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wspd_lam) <span class="co"># p = 0.02, r^2 = 0.003</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ wspd_lamb, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-42.41 -25.07 -19.79  -2.64 521.21 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)   
+(Intercept)  10.6867     3.7240   2.870  0.00417 **
+wspd_lamb     1.1214     0.4821   2.326  0.02017 * 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 56.01 on 1321 degrees of freedom
+  (83 observations deleted due to missingness)
+Multiple R-squared:  0.004079,  Adjusted R-squared:  0.003325 
+F-statistic: 5.411 on 1 and 1321 DF,  p-value: 0.02017</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wspd_lam, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals still aren't normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Wind Gust (not significant, not enough support to reject the null hypothesis that there isn't a relationship between wind gust speed and departure delay)</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>gust <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wind_gust, <span class="at">data =</span> df)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gust) <span class="co">#p = 0.55, r^2 = -0.003, F = 0.36, DF = 1, 238</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ wind_gust, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-43.97 -29.77 -24.62  -2.85 322.38 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)
+(Intercept)  11.9202    19.5336   0.610    0.542
+wind_gust     0.4225     0.6996   0.604    0.546
+
+Residual standard error: 62.58 on 238 degrees of freedom
+  (1166 observations deleted due to missingness)
+Multiple R-squared:  0.00153,   Adjusted R-squared:  -0.002665 
+F-statistic: 0.3648 on 1 and 238 DF,  p-value: 0.5464</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Precipitation (residuals aren't normal so we fail to reject the null hypothesis that there is a relationship between precipitation and departure delay)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>precip <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> precip, <span class="at">data =</span> df)</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(precip) <span class="co">#p &lt;&lt; 0, r^2 = 0.01, F = 16.65, DF = 1, 1323</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ precip, data = df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-100.59  -24.67  -20.67   -1.67  518.33 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   17.672      1.546  11.432  &lt; 2e-16 ***
+precip       296.120     72.569   4.081 4.76e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.74 on 1323 degrees of freedom
+  (81 observations deleted due to missingness)
+Multiple R-squared:  0.01243,   Adjusted R-squared:  0.01168 
+F-statistic: 16.65 on 1 and 1323 DF,  p-value: 4.761e-05</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(precip, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals aren't normal </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>precip_adj <span class="ot">&lt;-</span> <span class="fu">asin</span>(<span class="fu">sqrt</span>(df<span class="sc">$</span>precip <span class="sc">/</span> <span class="fl">100.0</span>))</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>precip_adj <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> precip_adj, <span class="at">data =</span> df)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(precip_adj) <span class="co"># p &lt;&lt; 0, r^2 = 0.02, F = 30.13</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ precip_adj, data = df)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-100.57  -23.78  -19.78   -1.78  519.22 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   16.782      1.557  10.780  &lt; 2e-16 ***
+precip_adj  1582.686    288.342   5.489 4.84e-08 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.46 on 1323 degrees of freedom
+  (81 observations deleted due to missingness)
+Multiple R-squared:  0.02227,   Adjusted R-squared:  0.02153 
+F-statistic: 30.13 on 1 and 1323 DF,  p-value: 4.842e-08</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(precip_adj, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals still aren't normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ps <span class="ot">&lt;-</span> <span class="fu">test_boxcox</span>(df<span class="sc">$</span>precip)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>precip_lamb <span class="ot">&lt;-</span> ((df<span class="sc">$</span>precip <span class="sc">^</span> <span class="fl">0.175</span>) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fl">0.175</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>precip_lam <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> precip_lamb, <span class="at">data =</span> df)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(precip_lam) <span class="co"># p &lt;&lt; 0, r^2 = 0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ precip_lamb, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-84.15 -23.20 -19.20  -2.20 519.80 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   91.038     11.512   7.908 5.47e-15 ***
+precip_lamb   13.097      2.061   6.354 2.88e-10 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.25 on 1323 degrees of freedom
+  (81 observations deleted due to missingness)
+Multiple R-squared:  0.02961,   Adjusted R-squared:  0.02888 
+F-statistic: 40.37 on 1 and 1323 DF,  p-value: 2.884e-10</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(precip_lam, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals not normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Pressure (because the residuals aren't normal we fail to reject the null hypothesis)</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>press <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> pressure, <span class="at">data =</span> df)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(press) <span class="co">#p = 0.001, r^2 = 0.007, F = 9.78, DF = 1, 1207</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ pressure, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-43.28 -23.75 -17.69  -2.61 519.09 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)   
+(Intercept)  663.202    206.715   3.208  0.00137 **
+pressure      -0.635      0.203  -3.128  0.00180 **
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 52.41 on 1207 degrees of freedom
+  (197 observations deleted due to missingness)
+Multiple R-squared:  0.008041,  Adjusted R-squared:  0.007219 
+F-statistic: 9.784 on 1 and 1207 DF,  p-value: 0.001802</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(press, <span class="at">which =</span> <span class="dv">2</span>) <span class="co">#residuals aren't normal </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Visibility (residuals not normal so we can't reject the null hypothesis)</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>vis <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> visib, <span class="at">data =</span> df)</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vis) <span class="co">#p &lt;&lt; 0, r^2 = 0.03, F = 36.12, DF = 1, 1323</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ visib, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-65.56 -23.17 -18.17  -2.17 520.83 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  58.9360     6.8923   8.551  &lt; 2e-16 ***
+visib        -4.3762     0.7282  -6.010  2.4e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.34 on 1323 degrees of freedom
+  (81 observations deleted due to missingness)
+Multiple R-squared:  0.02657,   Adjusted R-squared:  0.02584 
+F-statistic: 36.12 on 1 and 1323 DF,  p-value: 2.397e-09</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vis, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals aren't normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>vis_adj <span class="ot">&lt;-</span> <span class="fu">asin</span>(<span class="fu">sqrt</span>(df<span class="sc">$</span>visib <span class="sc">/</span> <span class="fl">100.0</span>))</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>vis_adj <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> vis_adj, <span class="at">data =</span> df)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vis_adj) <span class="co">#p &lt;&lt; 0, r^2 = 0.3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ vis_adj, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-78.04 -23.47 -18.47  -2.47 520.53 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   74.039      9.384   7.890 6.28e-15 ***
+vis_adj     -182.037     30.369  -5.994 2.63e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.34 on 1323 degrees of freedom
+  (81 observations deleted due to missingness)
+Multiple R-squared:  0.02644,   Adjusted R-squared:  0.0257 
+F-statistic: 35.93 on 1 and 1323 DF,  p-value: 2.633e-09</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vis_adj, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#not normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>vc <span class="ot">&lt;-</span> <span class="fu">test_boxcox</span>(df<span class="sc">$</span>vis_adj)</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>vis_lamb <span class="ot">&lt;-</span> ((df<span class="sc">$</span>visib <span class="sc">^</span> <span class="fl">1.090</span>) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fl">1.090</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>vis_lam <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> vis_lamb, <span class="at">data =</span> df)</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vis_lam) <span class="co"># p&lt;&lt;0, r^2 = 0.03</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = `Departure Delay` ~ vis_lamb, data = df)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-65.08 -23.14 -18.14  -2.14 520.86 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   54.078      6.117   8.840  &lt; 2e-16 ***
+vis_lamb      -3.755      0.626  -5.999 2.56e-09 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 55.34 on 1323 degrees of freedom
+  (81 observations deleted due to missingness)
+Multiple R-squared:  0.02648,   Adjusted R-squared:  0.02574 
+F-statistic: 35.99 on 1 and 1323 DF,  p-value: 2.562e-09</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vis_lam, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals not normal</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="regression_files/figure-html/unnamed-chunk-6-10.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <!-- -->
 
 </section>
@@ -757,75 +1108,153 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
 });
 </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb11" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Regression Homework Activity"</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Emma Sharp"</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> </span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: false</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="an">editor_options:</span><span class="co"> </span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co">  chunk_output_type: console</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="al">![](media/models.png)</span></span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup, include=FALSE}</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="in">library( tidyverse )</span></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a><span class="in">library( nycflights13 )</span></span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>Since regression analysis is such a fundamental component of inferences, I thought it would be a good idea to try to work through a few more examples to give you some more practice.  </span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>For this we will use some data on flights into and out of Newark (EWR), JFK, and La Guardia airports in NYC metropolitan area.</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( flights) </span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>We also have some data related to local weather conditions.</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( weather )</span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>I'm going to make a synthetic data set consisting of flights out of JFK for the *ExpressJet* airlines.  Since the weather data is on the hour, I also make a synthetic varible <span class="in">`Month.Day.Hour`</span> so that I can join the weather data to this one.</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>flights <span class="sc">%&gt;%</span></span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>( origin <span class="sc">==</span> <span class="st">"JFK"</span>, carrier <span class="sc">==</span> <span class="st">"EV"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">DateTime =</span> <span class="fu">paste</span>(month,day,hour, <span class="at">sep=</span><span class="st">"."</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>( DateTime, </span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="ot">=</span> dep_delay,</span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Departure Time</span><span class="st">`</span> <span class="ot">=</span> sched_dep_time) <span class="sc">%&gt;%</span></span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">droplevels</span>() <span class="ot">-&gt;</span> df.jfk </span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( df.jfk )</span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>Now I'll do the same with the weather data.</span>
-<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a>weather <span class="sc">%&gt;%</span></span>
-<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>( origin <span class="sc">==</span> <span class="st">"JFK"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">DateTime =</span> <span class="fu">paste</span>(month,day,hour, <span class="at">sep=</span><span class="st">"."</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>( <span class="sc">-</span>origin, <span class="sc">-</span>year, <span class="sc">-</span>month, <span class="sc">-</span>day, <span class="sc">-</span>hour, <span class="sc">-</span>time_hour ) <span class="ot">-&gt;</span> df.weather </span>
-<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( df.weather )</span>
-<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>Now, I'm going to <span class="in">`merge`</span> these two <span class="in">`data.frame`</span> objects using the common <span class="in">`key`</span> I made <span class="in">`DateTime`</span>.</span>
-<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a><span class="fu">merge</span>( df.jfk, df.weather, <span class="at">by=</span><span class="st">"DateTime"</span> ) <span class="sc">%&gt;%</span></span>
-<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>( <span class="sc">-</span>DateTime ) <span class="ot">-&gt;</span> df </span>
-<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( df )</span>
-<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a><span class="fu"># Activity</span></span>
-<span id="cb11-77"><a href="#cb11-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-78"><a href="#cb11-78" aria-hidden="true" tabindex="-1"></a>What features of this data set may impact the departure delay for flights coming out of JFK on *ExpressJet* Airlines?</span>
-<span id="cb11-79"><a href="#cb11-79" aria-hidden="true" tabindex="-1"></a></span>
+<div class="sourceCode" id="cb43" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Regression Homework Activity"</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="an">author:</span><span class="co"> "Emma Sharp"</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span><span class="co"> </span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: false</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="an">editor_options:</span><span class="co"> </span></span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a><span class="co">  chunk_output_type: console</span></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup, include=FALSE}</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a><span class="in">library( tidyverse )</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a><span class="in">library( nycflights13 )</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a><span class="in">test_boxcox &lt;- function( x, lambdas = seq(-1.1, 1.1, by = 0.015) ) {</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a><span class="in">  ret &lt;- data.frame( Lambda = lambdas,</span></span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a><span class="in">                     W = NA,</span></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a><span class="in">                     P = NA)</span></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a><span class="in">  for( lambda in lambdas ) {</span></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a><span class="in">    x.tilde &lt;- (x^lambda - 1) / lambda   </span></span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a><span class="in">    w &lt;- shapiro.test( x.tilde )</span></span>
+<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a><span class="in">    ret$W[ ret$Lambda == lambda ] &lt;- w$statistic</span></span>
+<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a><span class="in">    ret$P[ ret$Lambda == lambda ] &lt;- w$p.value</span></span>
+<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a><span class="in">  }</span></span>
+<span id="cb43-27"><a href="#cb43-27" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
+<span id="cb43-28"><a href="#cb43-28" aria-hidden="true" tabindex="-1"></a><span class="in">  return( ret )</span></span>
+<span id="cb43-29"><a href="#cb43-29" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb43-30"><a href="#cb43-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-31"><a href="#cb43-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-32"><a href="#cb43-32" aria-hidden="true" tabindex="-1"></a>Since regression analysis is such a fundamental component of inferences, I thought it would be a good idea to try to work through a few more examples to give you some more practice.  </span>
+<span id="cb43-33"><a href="#cb43-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-34"><a href="#cb43-34" aria-hidden="true" tabindex="-1"></a>For this we will use some data on flights into and out of Newark (EWR), JFK, and La Guardia airports in NYC metropolitan area.</span>
+<span id="cb43-35"><a href="#cb43-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-38"><a href="#cb43-38" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb43-39"><a href="#cb43-39" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( flights) </span>
+<span id="cb43-40"><a href="#cb43-40" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-41"><a href="#cb43-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-42"><a href="#cb43-42" aria-hidden="true" tabindex="-1"></a>We also have some data related to local weather conditions.</span>
+<span id="cb43-43"><a href="#cb43-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-46"><a href="#cb43-46" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb43-47"><a href="#cb43-47" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( weather )</span>
+<span id="cb43-48"><a href="#cb43-48" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-49"><a href="#cb43-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-50"><a href="#cb43-50" aria-hidden="true" tabindex="-1"></a>I'm going to make a synthetic data set consisting of flights out of JFK for the *ExpressJet* airlines.  Since the weather data is on the hour, I also make a synthetic varible <span class="in">`Month.Day.Hour`</span> so that I can join the weather data to this one.</span>
+<span id="cb43-51"><a href="#cb43-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-54"><a href="#cb43-54" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb43-55"><a href="#cb43-55" aria-hidden="true" tabindex="-1"></a>flights <span class="sc">%&gt;%</span></span>
+<span id="cb43-56"><a href="#cb43-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>( origin <span class="sc">==</span> <span class="st">"JFK"</span>, carrier <span class="sc">==</span> <span class="st">"EV"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-57"><a href="#cb43-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">DateTime =</span> <span class="fu">paste</span>(month,day,hour, <span class="at">sep=</span><span class="st">"."</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-58"><a href="#cb43-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>( DateTime, </span>
+<span id="cb43-59"><a href="#cb43-59" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="ot">=</span> dep_delay,</span>
+<span id="cb43-60"><a href="#cb43-60" aria-hidden="true" tabindex="-1"></a>          <span class="st">`</span><span class="at">Departure Time</span><span class="st">`</span> <span class="ot">=</span> sched_dep_time) <span class="sc">%&gt;%</span></span>
+<span id="cb43-61"><a href="#cb43-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">droplevels</span>() <span class="ot">-&gt;</span> df.jfk </span>
+<span id="cb43-62"><a href="#cb43-62" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( df.jfk )</span>
+<span id="cb43-63"><a href="#cb43-63" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-64"><a href="#cb43-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-65"><a href="#cb43-65" aria-hidden="true" tabindex="-1"></a>Now I'll do the same with the weather data.</span>
+<span id="cb43-66"><a href="#cb43-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-69"><a href="#cb43-69" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb43-70"><a href="#cb43-70" aria-hidden="true" tabindex="-1"></a>weather <span class="sc">%&gt;%</span></span>
+<span id="cb43-71"><a href="#cb43-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>( origin <span class="sc">==</span> <span class="st">"JFK"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb43-72"><a href="#cb43-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>( <span class="at">DateTime =</span> <span class="fu">paste</span>(month,day,hour, <span class="at">sep=</span><span class="st">"."</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-73"><a href="#cb43-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>( <span class="sc">-</span>origin, <span class="sc">-</span>year, <span class="sc">-</span>month, <span class="sc">-</span>day, <span class="sc">-</span>hour, <span class="sc">-</span>time_hour ) <span class="ot">-&gt;</span> df.weather </span>
+<span id="cb43-74"><a href="#cb43-74" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( df.weather )</span>
+<span id="cb43-75"><a href="#cb43-75" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-76"><a href="#cb43-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-77"><a href="#cb43-77" aria-hidden="true" tabindex="-1"></a>Now, I'm going to <span class="in">`merge`</span> these two <span class="in">`data.frame`</span> objects using the common <span class="in">`key`</span> I made <span class="in">`DateTime`</span>.</span>
+<span id="cb43-78"><a href="#cb43-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-81"><a href="#cb43-81" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb43-82"><a href="#cb43-82" aria-hidden="true" tabindex="-1"></a><span class="fu">merge</span>( df.jfk, df.weather, <span class="at">by=</span><span class="st">"DateTime"</span> ) <span class="sc">%&gt;%</span></span>
+<span id="cb43-83"><a href="#cb43-83" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>( <span class="sc">-</span>DateTime ) <span class="ot">-&gt;</span> df </span>
+<span id="cb43-84"><a href="#cb43-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-85"><a href="#cb43-85" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>( df )</span>
+<span id="cb43-86"><a href="#cb43-86" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-87"><a href="#cb43-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-88"><a href="#cb43-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-89"><a href="#cb43-89" aria-hidden="true" tabindex="-1"></a><span class="fu"># Activity</span></span>
+<span id="cb43-90"><a href="#cb43-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-91"><a href="#cb43-91" aria-hidden="true" tabindex="-1"></a>What features of this data set may impact the departure delay for flights coming out of JFK on *ExpressJet* Airlines?</span>
+<span id="cb43-92"><a href="#cb43-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-95"><a href="#cb43-95" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb43-96"><a href="#cb43-96" aria-hidden="true" tabindex="-1"></a><span class="co">#Wind Speed (because the residuals aren't normal, we fail to reject the null hypothesis that there isn't a relationship between wind speed and departure delay)</span></span>
+<span id="cb43-97"><a href="#cb43-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-98"><a href="#cb43-98" aria-hidden="true" tabindex="-1"></a>wspd <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wind_speed, <span class="at">data =</span> df)</span>
+<span id="cb43-99"><a href="#cb43-99" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wspd) <span class="co">#p = 0.01, r^2 = 0.003, F = 6, DF= 1, 1321</span></span>
+<span id="cb43-100"><a href="#cb43-100" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wspd, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals aren't normal</span></span>
+<span id="cb43-101"><a href="#cb43-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-102"><a href="#cb43-102" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>wind_speed_adj <span class="ot">&lt;-</span> <span class="fu">asin</span>(<span class="fu">sqrt</span>(df<span class="sc">$</span>wind_speed <span class="sc">/</span> <span class="fl">100.0</span>))</span>
+<span id="cb43-103"><a href="#cb43-103" aria-hidden="true" tabindex="-1"></a>wspd_adj <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wind_speed_adj, <span class="at">data =</span> df)</span>
+<span id="cb43-104"><a href="#cb43-104" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wspd_adj) <span class="co">#p = 0.04, r^2 = 0.002, F = 4.4, DF = 1, 1321</span></span>
+<span id="cb43-105"><a href="#cb43-105" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wspd_adj, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals still aren't normal</span></span>
+<span id="cb43-106"><a href="#cb43-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-107"><a href="#cb43-107" aria-hidden="true" tabindex="-1"></a>ws <span class="ot">&lt;-</span> <span class="fu">test_boxcox</span>(df<span class="sc">$</span>wind_speed)</span>
+<span id="cb43-108"><a href="#cb43-108" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>wspd_lamb <span class="ot">&lt;-</span> ((df<span class="sc">$</span>wind_speed <span class="sc">^</span> <span class="fl">0.76</span>) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fl">0.76</span></span>
+<span id="cb43-109"><a href="#cb43-109" aria-hidden="true" tabindex="-1"></a>wspd_lam <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wspd_lamb, <span class="at">data =</span> df)</span>
+<span id="cb43-110"><a href="#cb43-110" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(wspd_lam) <span class="co"># p = 0.02, r^2 = 0.003</span></span>
+<span id="cb43-111"><a href="#cb43-111" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(wspd_lam, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals still aren't normal</span></span>
+<span id="cb43-112"><a href="#cb43-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-113"><a href="#cb43-113" aria-hidden="true" tabindex="-1"></a><span class="co">#Wind Gust (not significant, not enough support to reject the null hypothesis that there isn't a relationship between wind gust speed and departure delay)</span></span>
+<span id="cb43-114"><a href="#cb43-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-115"><a href="#cb43-115" aria-hidden="true" tabindex="-1"></a>gust <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> wind_gust, <span class="at">data =</span> df)</span>
+<span id="cb43-116"><a href="#cb43-116" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gust) <span class="co">#p = 0.55, r^2 = -0.003, F = 0.36, DF = 1, 238</span></span>
+<span id="cb43-117"><a href="#cb43-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-118"><a href="#cb43-118" aria-hidden="true" tabindex="-1"></a><span class="co">#Precipitation (residuals aren't normal so we fail to reject the null hypothesis that there is a relationship between precipitation and departure delay)</span></span>
+<span id="cb43-119"><a href="#cb43-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-120"><a href="#cb43-120" aria-hidden="true" tabindex="-1"></a>precip <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> precip, <span class="at">data =</span> df)</span>
+<span id="cb43-121"><a href="#cb43-121" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(precip) <span class="co">#p &lt;&lt; 0, r^2 = 0.01, F = 16.65, DF = 1, 1323</span></span>
+<span id="cb43-122"><a href="#cb43-122" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(precip, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals aren't normal </span></span>
+<span id="cb43-123"><a href="#cb43-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-124"><a href="#cb43-124" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>precip_adj <span class="ot">&lt;-</span> <span class="fu">asin</span>(<span class="fu">sqrt</span>(df<span class="sc">$</span>precip <span class="sc">/</span> <span class="fl">100.0</span>))</span>
+<span id="cb43-125"><a href="#cb43-125" aria-hidden="true" tabindex="-1"></a>precip_adj <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> precip_adj, <span class="at">data =</span> df)</span>
+<span id="cb43-126"><a href="#cb43-126" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(precip_adj) <span class="co"># p &lt;&lt; 0, r^2 = 0.02, F = 30.13</span></span>
+<span id="cb43-127"><a href="#cb43-127" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(precip_adj, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals still aren't normal</span></span>
+<span id="cb43-128"><a href="#cb43-128" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-129"><a href="#cb43-129" aria-hidden="true" tabindex="-1"></a>ps <span class="ot">&lt;-</span> <span class="fu">test_boxcox</span>(df<span class="sc">$</span>precip)</span>
+<span id="cb43-130"><a href="#cb43-130" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>precip_lamb <span class="ot">&lt;-</span> ((df<span class="sc">$</span>precip <span class="sc">^</span> <span class="fl">0.175</span>) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fl">0.175</span></span>
+<span id="cb43-131"><a href="#cb43-131" aria-hidden="true" tabindex="-1"></a>precip_lam <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> precip_lamb, <span class="at">data =</span> df)</span>
+<span id="cb43-132"><a href="#cb43-132" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(precip_lam) <span class="co"># p &lt;&lt; 0, r^2 = 0.03</span></span>
+<span id="cb43-133"><a href="#cb43-133" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(precip_lam, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals not normal</span></span>
+<span id="cb43-134"><a href="#cb43-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-135"><a href="#cb43-135" aria-hidden="true" tabindex="-1"></a><span class="co">#Pressure (because the residuals aren't normal we fail to reject the null hypothesis)</span></span>
+<span id="cb43-136"><a href="#cb43-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-137"><a href="#cb43-137" aria-hidden="true" tabindex="-1"></a>press <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> pressure, <span class="at">data =</span> df)</span>
+<span id="cb43-138"><a href="#cb43-138" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(press) <span class="co">#p = 0.001, r^2 = 0.007, F = 9.78, DF = 1, 1207</span></span>
+<span id="cb43-139"><a href="#cb43-139" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(press, <span class="at">which =</span> <span class="dv">2</span>) <span class="co">#residuals aren't normal </span></span>
+<span id="cb43-140"><a href="#cb43-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-141"><a href="#cb43-141" aria-hidden="true" tabindex="-1"></a><span class="co">#Visibility (residuals not normal so we can't reject the null hypothesis)</span></span>
+<span id="cb43-142"><a href="#cb43-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-143"><a href="#cb43-143" aria-hidden="true" tabindex="-1"></a>vis <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> visib, <span class="at">data =</span> df)</span>
+<span id="cb43-144"><a href="#cb43-144" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vis) <span class="co">#p &lt;&lt; 0, r^2 = 0.03, F = 36.12, DF = 1, 1323</span></span>
+<span id="cb43-145"><a href="#cb43-145" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vis, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals aren't normal</span></span>
+<span id="cb43-146"><a href="#cb43-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-147"><a href="#cb43-147" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>vis_adj <span class="ot">&lt;-</span> <span class="fu">asin</span>(<span class="fu">sqrt</span>(df<span class="sc">$</span>visib <span class="sc">/</span> <span class="fl">100.0</span>))</span>
+<span id="cb43-148"><a href="#cb43-148" aria-hidden="true" tabindex="-1"></a>vis_adj <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> vis_adj, <span class="at">data =</span> df)</span>
+<span id="cb43-149"><a href="#cb43-149" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vis_adj) <span class="co">#p &lt;&lt; 0, r^2 = 0.3</span></span>
+<span id="cb43-150"><a href="#cb43-150" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vis_adj, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#not normal</span></span>
+<span id="cb43-151"><a href="#cb43-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-152"><a href="#cb43-152" aria-hidden="true" tabindex="-1"></a>vc <span class="ot">&lt;-</span> <span class="fu">test_boxcox</span>(df<span class="sc">$</span>vis_adj)</span>
+<span id="cb43-153"><a href="#cb43-153" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>vis_lamb <span class="ot">&lt;-</span> ((df<span class="sc">$</span>visib <span class="sc">^</span> <span class="fl">1.090</span>) <span class="sc">-</span> <span class="dv">1</span>) <span class="sc">/</span> <span class="fl">1.090</span></span>
+<span id="cb43-154"><a href="#cb43-154" aria-hidden="true" tabindex="-1"></a>vis_lam <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="st">`</span><span class="at">Departure Delay</span><span class="st">`</span> <span class="sc">~</span> vis_lamb, <span class="at">data =</span> df)</span>
+<span id="cb43-155"><a href="#cb43-155" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vis_lam) <span class="co"># p&lt;&lt;0, r^2 = 0.03</span></span>
+<span id="cb43-156"><a href="#cb43-156" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(vis_lam, <span class="at">which =</span> <span class="dv">1</span>) <span class="co">#residuals not normal</span></span>
+<span id="cb43-157"><a href="#cb43-157" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb43-158"><a href="#cb43-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-159"><a href="#cb43-159" aria-hidden="true" tabindex="-1"></a></span>
 </code><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
