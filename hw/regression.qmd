@@ -1,0 +1,148 @@
+---
+title: "Regression Homework Activity"
+author: "Emma Sharp"
+format: 
+  html:
+    code-tools: true
+    toc: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+library( tidyverse )
+library( nycflights13 )
+
+test_boxcox <- function( x, lambdas = seq(-1.1, 1.1, by = 0.015) ) {
+  ret <- data.frame( Lambda = lambdas,
+                     W = NA,
+                     P = NA)
+  
+  for( lambda in lambdas ) {
+    x.tilde <- (x^lambda - 1) / lambda   
+    w <- shapiro.test( x.tilde )
+    ret$W[ ret$Lambda == lambda ] <- w$statistic
+    ret$P[ ret$Lambda == lambda ] <- w$p.value
+  }
+  
+  return( ret )
+}
+```
+
+Since regression analysis is such a fundamental component of inferences, I thought it would be a good idea to try to work through a few more examples to give you some more practice.  
+
+For this we will use some data on flights into and out of Newark (EWR), JFK, and La Guardia airports in NYC metropolitan area.
+
+```{r}
+summary( flights) 
+```
+
+We also have some data related to local weather conditions.
+
+```{r}
+summary( weather )
+```
+
+I'm going to make a synthetic data set consisting of flights out of JFK for the *ExpressJet* airlines.  Since the weather data is on the hour, I also make a synthetic varible `Month.Day.Hour` so that I can join the weather data to this one.
+
+```{r}
+flights %>%
+  filter( origin == "JFK", carrier == "EV") %>%
+  mutate( DateTime = paste(month,day,hour, sep=".")) %>%
+  select( DateTime, 
+          `Departure Delay` = dep_delay,
+          `Departure Time` = sched_dep_time) %>%
+  droplevels() -> df.jfk 
+summary( df.jfk )
+```
+
+Now I'll do the same with the weather data.
+
+```{r}
+weather %>%
+  filter( origin == "JFK") %>% 
+  mutate( DateTime = paste(month,day,hour, sep=".")) %>%
+  select( -origin, -year, -month, -day, -hour, -time_hour ) -> df.weather 
+summary( df.weather )
+```
+
+Now, I'm going to `merge` these two `data.frame` objects using the common `key` I made `DateTime`.
+
+```{r}
+merge( df.jfk, df.weather, by="DateTime" ) %>%
+  select( -DateTime ) -> df 
+
+summary( df )
+```
+
+
+# Activity
+
+What features of this data set may impact the departure delay for flights coming out of JFK on *ExpressJet* Airlines?
+
+```{r}
+#Wind Speed (because the residuals aren't normal, we fail to reject the null hypothesis that there isn't a relationship between wind speed and departure delay)
+
+wspd <- lm(`Departure Delay` ~ wind_speed, data = df)
+summary(wspd) #p = 0.01, r^2 = 0.003, F = 6, DF= 1, 1321
+plot(wspd, which = 1) #residuals aren't normal
+
+df$wind_speed_adj <- asin(sqrt(df$wind_speed / 100.0))
+wspd_adj <- lm(`Departure Delay` ~ wind_speed_adj, data = df)
+summary(wspd_adj) #p = 0.04, r^2 = 0.002, F = 4.4, DF = 1, 1321
+plot(wspd_adj, which = 1) #residuals still aren't normal
+
+ws <- test_boxcox(df$wind_speed)
+df$wspd_lamb <- ((df$wind_speed ^ 0.76) - 1) / 0.76
+wspd_lam <- lm(`Departure Delay` ~ wspd_lamb, data = df)
+summary(wspd_lam) # p = 0.02, r^2 = 0.003
+plot(wspd_lam, which = 1) #residuals still aren't normal
+
+#Wind Gust (not significant, not enough support to reject the null hypothesis that there isn't a relationship between wind gust speed and departure delay)
+
+gust <- lm(`Departure Delay` ~ wind_gust, data = df)
+summary(gust) #p = 0.55, r^2 = -0.003, F = 0.36, DF = 1, 238
+
+#Precipitation (residuals aren't normal so we fail to reject the null hypothesis that there is a relationship between precipitation and departure delay)
+
+precip <- lm(`Departure Delay` ~ precip, data = df)
+summary(precip) #p << 0, r^2 = 0.01, F = 16.65, DF = 1, 1323
+plot(precip, which = 1) #residuals aren't normal 
+
+df$precip_adj <- asin(sqrt(df$precip / 100.0))
+precip_adj <- lm(`Departure Delay` ~ precip_adj, data = df)
+summary(precip_adj) # p << 0, r^2 = 0.02, F = 30.13
+plot(precip_adj, which = 1) #residuals still aren't normal
+
+ps <- test_boxcox(df$precip)
+df$precip_lamb <- ((df$precip ^ 0.175) - 1) / 0.175
+precip_lam <- lm(`Departure Delay` ~ precip_lamb, data = df)
+summary(precip_lam) # p << 0, r^2 = 0.03
+plot(precip_lam, which = 1) #residuals not normal
+
+#Pressure (because the residuals aren't normal we fail to reject the null hypothesis)
+
+press <- lm(`Departure Delay` ~ pressure, data = df)
+summary(press) #p = 0.001, r^2 = 0.007, F = 9.78, DF = 1, 1207
+plot(press, which = 2) #residuals aren't normal 
+
+#Visibility (residuals not normal so we can't reject the null hypothesis)
+
+vis <- lm(`Departure Delay` ~ visib, data = df)
+summary(vis) #p << 0, r^2 = 0.03, F = 36.12, DF = 1, 1323
+plot(vis, which = 1) #residuals aren't normal
+
+df$vis_adj <- asin(sqrt(df$visib / 100.0))
+vis_adj <- lm(`Departure Delay` ~ vis_adj, data = df)
+summary(vis_adj) #p << 0, r^2 = 0.3
+plot(vis_adj, which = 1) #not normal
+
+vc <- test_boxcox(df$vis_adj)
+df$vis_lamb <- ((df$visib ^ 1.090) - 1) / 1.090
+vis_lam <- lm(`Departure Delay` ~ vis_lamb, data = df)
+summary(vis_lam) # p<<0, r^2 = 0.03
+plot(vis_lam, which = 1) #residuals not normal
+```
+
+
+
