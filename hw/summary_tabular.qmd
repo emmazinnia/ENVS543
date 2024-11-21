@@ -10,7 +10,7 @@ editor_options:
 
 ## Abstract
 
-The Back Bay's water conditions has been monitored for many decades. In this analysis, the difference in water conditions at different sampling sites is looked at. The air temperature was relatively similar throughout the sites.  The water temperature was coldest and most salty in the Bay when compared to the other sampling sites.  
+The Back Bay's water conditions has been monitored for many decades. In this analysis, the difference in water conditions at different sampling sites is looked at. The air temperature was relatively similar throughout the sites. The water temperature was coldest and most salty in the Bay when compared to the other sampling sites.
 
 ## Introduction
 
@@ -57,7 +57,7 @@ table <- water %>%
 table
 ```
 
-Throughout all of the sites, the mean air temperature stayed relatively the same, except for the C-pool, which was cooler than the rest of the cites. The mean water temperature throughout the pool sites was relatively similar.  However, the mean water temperature in the Bay itself was cooler than any of the other sites.  This was likely because the pools are smaller masses of water than the Bay, meaning they will heat up quicker than the Bay, which would stay relatively temperate. The salinity was higher in the Bay than any of the pool sites.  The D-pool had the lowest salinity. 
+Throughout all of the sites, the mean air temperature stayed relatively the same, except for the C-pool, which was cooler than the rest of the cites. The mean water temperature throughout the pool sites was relatively similar. However, the mean water temperature in the Bay itself was cooler than any of the other sites. This was likely because the pools are smaller masses of water than the Bay, meaning they will heat up quicker than the Bay, which would stay relatively temperate. The salinity was higher in the Bay than any of the pool sites. The D-pool had the lowest salinity.
 
 ## Citation
 
