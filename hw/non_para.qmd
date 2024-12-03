@@ -1,0 +1,98 @@
+---
+title: "Non-Parametric & Counting Statistics"
+author: "Emma Sharp"
+date: "12/1/2024"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+For each of the following questions, please provide your analysis and an interpretation (e.g., written as you would in a scientific publication).  If it helps to describe your result, add tables or figures to help make your case. For every case, explain why you chose the particular analysis you did and demonstrate the reasons from the data.
+
+1. The FDA has suggested a change in a medication that has been shown to have detrimental side effects in half of the patients.  A clinical trial was conducted with nineteen patients; only three reported side effects.  Did the change make a significant difference?  
+
+```{r}
+meds <- binom.test(c(16, 3), p = 0.50)
+meds
+```
+
+The change made a significant difference.  I chose to run a binomial test because there are only two "states", no side effects or side effects.  The mean number of people not experiencing side effects before the change was 50%, and the mean number of people not experiencing side effects in the trial was 84%, with a 95% confidence interval ranging from 60%-97%.  The binomial test run had a p-value of 0.004, meaning that there is enough evidence to reject the null hypothesis that the mean of the clinical trial was the same as the mean before the change.
+
+2. Two different environmental remediation treatments are evaluated for the impacts on turbidity (measured using the Nephelometric Turbidity Unit or NTU).  For regulatory reasons, turbidity is binned into four groups based on NTU: 0-15 ntu, 16-22 ntu, 23-30 ntu, and 31+ ntu.  Do both treatments have the same impact on turbidity?  Explain.
+
+```{r}
+#| include: false
+library(readr)
+library(tidyverse)
+```
+
+```{r}
+turb <- read_csv("ntu_data.csv", show_col_types = FALSE)
+
+turb %>% 
+  ggplot(aes(x = NTU))+
+  geom_histogram(bins = 10)+
+  labs(y = "Count",
+       title = "Distribution of NTU is Not Normal")
+
+turbw <- wilcox.test(NTU ~ Treatment, data = turb)
+turbw
+
+turb %>% 
+  ggplot(aes(x = Treatment,
+             y = NTU))+
+  geom_boxplot()+
+  labs(title = "Turbidity of both Treatment Groups",
+       x = "Treatment Group")+
+  theme_bw()
+```
+
+The two treatments do not have the same impact on turbidity.  I chose to run a Wilcoxon test because there are two treatments, and the NTU is not normally distributed.  The Wilcoxon test found a p-value of p = 1.29e-5, so there is enough support to reject the null hypothesis that the medians of the two treatment groups are equal.  This means that the median for treatment group A is significantly larger than the median for treatment group B.
+    
+3. A dozen graduate students tried to determine if there was a relationship between their undergraduate GPA and their scores on the Graduate Records Examination.  Look at these data and determine the extent to which they are related.  Explain.
+
+```{r}
+library(graphics)
+grads <- read_csv("grad_school.csv", show_col_types = FALSE)
+
+grad <- lm(GRE ~ GPA, data = grads)
+summary(grad)
+
+grads %>% 
+  ggplot(aes(x = grad$residuals))+
+  geom_histogram(bins = 8)+
+  labs(x = "Residuals",
+       y = "Count",
+       title = "Residuals Aren't Normally Distributed")+
+  theme_minimal()
+
+gra <- loess(GRE ~ GPA, data = grads)
+gra
+
+with(grads, scatter.smooth(GPA, GRE))
+```
+
+As GPA increases, so does GRE.  I decided to use a loess model for this question because the residuals of the linear model weren't normally distributed.
+    
+4. You are looking at fruit yield on dogwood.  You designed an experiment with four different treatments and measured the total yield in germinated seeds.  Are there differences in yield?  Explain.
+
+```{r}
+dog <- read_csv("DogwoodSeeds.csv", show_col_types = FALSE)
+
+dog %>% 
+  ggplot(aes(x = Seeds))+
+  geom_histogram(bins = 10)+
+  labs(y = "Count",
+       title = "Distribution of Seeds is Not Normal")
+
+dog %>% 
+  ggplot(aes(x = Treatment,
+             y = Seeds))+
+  geom_boxplot()+
+  labs(title = "Germinated Seeds by Treatment Group")
+
+dogs <- kruskal.test(Seeds ~ Treatment, data = dog)
+dogs
+```
+There are differences in the number of seeds germinated between the different treatment groups.  I decided to use  Kruskal-Wallis Test because the distribution of the response variable was not normal.  The K-W test found a p-value of 1.14e-5, so there is enough evidence to reject the null hypothesis that the medians of the four treatment groups are the same.  This means that at least one of the four treatment groups has a median different than one of the other treatment groups.
