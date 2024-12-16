@@ -1,0 +1,358 @@
+---
+title: "Final Exam"
+author: "Emma Sharp"
+date: "12/7/2024"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#| include: false
+library(raster)
+library(readr)
+library(terra)
+library(tidyverse)
+library(sf)
+library(kableExtra)
+
+loc <- read_csv("Arapat_Locations.csv")
+sam <- read_csv("Arapat_Samples.csv")
+now <- raster("suitability_now.tif")
+then <- raster("suitability_lgm.asc")
+```
+
+```{r}
+#| message: false
+#Creating a Data Frame Sorted By Site, With Columns For Count of Males,
+#Females, Ratio of Males to Females, and if Ratio Deviates From 1 (Also
+#Creating Column With Only Site Number)
+by_site <- sam %>% 
+  group_by(Site, Sex) %>%
+  summarise(Count = length(Sex)) %>% 
+  pivot_wider(names_from = Sex, values_from = Count) %>% 
+  separate_wider_delim(col = Site, 
+                       delim=" ", 
+                       names=c("site", "Site")) %>% 
+  mutate(`Males:Females` = Male / Female) %>% 
+  mutate(Ratio_Dev = ifelse(`Males:Females` > 1,
+                            "Greater",
+                            ifelse(`Males:Females` == 1,
+                                   "Equal",
+                                   "Less"))) %>%
+ dplyr::select(Site, Male, Female, `Males:Females`, Ratio_Dev)
+
+#Adding Phenotype A and B
+mid <- sam %>% 
+  group_by(Site) %>% 
+  summarise(A = mean(PhenotypeA),
+            B = mean(PhenotypeB)) %>% 
+  separate_wider_delim(col = Site, 
+                       delim=" ", 
+                       names=c("site", "Site")) %>% 
+  select(Site, A, B)
+
+by_site <- full_join(by_site, mid,
+                     by = "Site")
+
+#Location of each Site, With Site Number as Its Own Column
+loc <- loc %>% 
+   separate_wider_delim(col = Site, 
+                       delim=" ", 
+                       names=c("site", "Site")) %>% 
+  select(!site)
+
+#Adding Location of Each Site 
+by_site <- full_join(by_site, loc, 
+                     by = "Site") 
+
+#Making The Data Frame a SF
+by_site <- by_site %>% 
+  st_as_sf(coords = c("Longitude", "Latitude"),
+           crs = 4326)
+
+#Extracting Data From Raster to Show Suitability Now at Each Site and Adding
+#it To the SF
+n_suit <- raster::extract(now, as(by_site, "Spatial"))
+
+by_site <- cbind(by_site, n_suit)
+
+by_site <- by_site %>% 
+  rename(Suitability = n_suit)
+
+#Extracting Data From Raster to Show Suitability Then at Each Site and Adding
+#it To the SF
+Suitability_Then <- raster::extract(then, as(by_site, "Spatial"))
+
+by_site <- cbind(by_site, Suitability_Then)
+
+by_site <- by_site %>% 
+  mutate(Change = Suitability - Suitability_Then)
+
+#Rearranging the Order of Factors to be More Logical
+by_site$Ratio_Dev <- factor(by_site$Ratio_Dev, 
+         levels=c("Less","Equal", "Greater")) 
+```
+
+```{r}
+#| message: false
+#Do sampled populations of the beetle have different sex ratios? You can
+#assume the plant to be replicated within each site.
+now %>%
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Suitability = suitability_now) %>% 
+  ggplot()+ 
+  geom_raster(aes(x = Longitude,
+                  y = Latitude,
+                  fill = Suitability))+
+  scale_fill_continuous(type = "viridis")+
+  coord_equal()+
+  geom_sf(data = by_site,
+          aes(col = Males.Females),
+          size = 4)+
+  labs(col = "Males:Females ",
+       fill = "Suitability",
+       title = "Observed Males:Females at Each Site")+
+  scale_color_gradient(low = "red", high = "pink")+
+  theme_classic() -> ratio_map
+
+ratio_map +
+  labs(title = "Actual Males:Females Now") -> ratio_map2
+
+#Values for Max and Min Ratios
+max <- max(by_site$Males.Females)
+min <- min(by_site$Males.Females)
+```
+
+```{r}
+#| message: false
+#Which sites have sex ratios that deviate from equal proportions of males and
+#females at the site?
+
+now %>%
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Suitability = suitability_now) %>% 
+  ggplot()+ 
+  geom_raster(aes(x = Longitude,
+                  y = Latitude,
+                  fill = Suitability))+
+  scale_fill_continuous(type = "viridis")+
+  coord_equal()+
+  geom_sf(data = by_site,
+          aes(col = Ratio_Dev),
+          size = 4)+
+  labs(col = "Is Ratio >, +, or < than 1?",
+       fill = "Suitability",
+       title = "Do the Sex Ratios Deviate From 1 at Each Sampling Location?")+
+  scale_color_manual(values = c("hotpink", "grey", "royalblue"))+
+  theme_classic() -> greaterorless_map
+```
+
+```{r}
+#| warning: false
+#| message: false
+#Is there a functional relationship between the habitat suitability at the
+#sampling locations and the sex ratio? Since all of our suitability
+#measurements are taken from raster data with a cell size of 1.0 km2 (e.g.,
+#all plants are in the same grid cell), collapse the sex ratio estimates to a
+#single value per site.
+rat_suit <- lm(Males.Females ~ Suitability, data = by_site)
+#significant p-value (0.033)
+
+test_nor_rat_suit <- shapiro.test(resid(rat_suit)) 
+#Because p > 0.5, residuals are normally distributed
+
+by_site %>% 
+  ggplot(aes(x = Suitability,
+             y = Males.Females))+
+  geom_point()+
+  stat_smooth(method = "lm")+
+  labs(y = "Males:Females",
+       title = "Ratio of Males to Females by Habitat Suitability")+
+  theme_classic() -> rat_suit_graph
+
+#Objects Representing Values From Linear Model
+get_pval <- function( model ) {
+  f <- summary( model )$fstatistic[1]
+  df1 <- summary( model )$fstatistic[2]
+  df2 <- summary( model )$fstatistic[3]
+  p <- as.numeric( 1.0 - pf( f, df1, df2 ) )
+  return( p  )
+}
+
+pv <- get_pval(rat_suit)
+
+r_adj <- summary(rat_suit)$adj.r.squared
+
+fs <- summary(rat_suit)$fstatistic
+f <- fs[1]
+df <- fs[2]
+df2 <- fs[3]
+
+co <- summary(rat_suit)$coefficients
+int <- co[1,1]
+m <- co[2,1]
+```
+
+```{r}
+#Does the inclusion of Phenotype A and Phenotype B improve the functional
+#relationship over habitat suitability alone?
+rat_suit_a <- lm(Males.Females ~ Suitability + A,
+                 data = by_site)
+#p = 0.1, not significant
+
+rat_suit_a_int <- lm(Males.Females ~ Suitability + A + 
+                       Suitability * A,
+                     data = by_site)
+#p = 0.06, not significant
+
+rat_suit_b <- lm(Males.Females ~ Suitability + B,
+                 data = by_site)
+#p = 0.07,  not significant
+
+rat_suit_b_int <- lm(Males.Females ~ Suitability + B + 
+                       Suitability * B,
+                     data = by_site)
+#p = 0.1, not significant
+
+rat_suit_ab <- lm(Males.Females ~ Suitability + A + B,
+                 data = by_site)
+#p = 0.2, not significant
+```
+
+```{r}
+#| message: false
+#Using the data from the last glacial maximum and the sampling locations, has
+#the suitability changed at each location (e.g., was it as suitable 20,000
+#years ago as today)?
+now %>%
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Suitability = suitability_now) %>% 
+  ggplot()+ 
+  geom_raster(aes(x = Longitude,
+                  y = Latitude,
+                  fill = Suitability))+
+  scale_fill_continuous(type = "viridis")+
+  coord_equal()+
+  geom_sf(data = by_site,
+          aes(col = Change),
+          size = 4)+
+  labs(col = "Change in Suitability",
+       fill = "Suitability Now",
+       title = "Changes in Habitat Suitability From \nthe Last Glacier Maximum to Now")+
+  scale_color_gradient(low = "saddlebrown", high = "pink")+
+  theme_classic() -> suit_change_map
+```
+
+```{r}
+#| message: false
+#Predict the distribution of the historical sex ratio by applying the model
+#you developed for current conditions to the suitability estimated from the
+#last glacial maximum.  Across the landscape, do you detect any trends that
+#may be due to the differences in climate, as measured by our estimates of
+#habitat suitability?
+
+#Creating Column With Predicted Males:Females at Last Glacial Maximum
+by_site$pred_M.F <- (m * by_site$Suitability_Then) + int
+
+#Creating Map Based on Predicted Values
+then %>%
+  rasterToPoints() %>%
+  as.data.frame() %>% 
+  transmute(Longitude = x,
+            Latitude = y,
+            Suitability = suitability_lgm) %>% 
+  ggplot()+ 
+  geom_raster(aes(x = Longitude,
+                  y = Latitude,
+                  fill = Suitability))+
+  scale_fill_continuous(type = "viridis")+
+  coord_equal()+
+  geom_sf(data = by_site,
+          aes(col = pred_M.F),
+          size = 4)+
+  labs(col = "Predicted\nMales:Females ",
+       fill = "Suitability at Last \nGlacier Maximum",
+       title = "Predicted Males:Females at Last Glacier Maximum")+
+  scale_color_gradient(low = "red", high = "pink")+
+  theme_classic() -> pred_m.f_map
+
+#Predicted Graph
+by_site %>% 
+  ggplot(aes(x = Suitability_Then,
+             y = pred_M.F))+
+  geom_point()+
+  stat_smooth(method = "lm")+
+  labs(y = "Males:Females",
+       title = "Predicted Males:Females by Habitat Suitability at Last Glacier Maximum")+
+  theme_classic() -> pred_rat_graph
+```
+
+```{r}
+#Creating a Table
+by_site$Site <- sort(as.numeric(by_site$Site))
+
+as.data.frame(by_site) %>% 
+  mutate(`Males:Females` = Males.Females) %>% 
+  select(Site, Suitability, `Males:Females`) %>% 
+  kable(caption = "Male:Female Ratio by Suitability") %>% 
+  kable_paper() -> table
+```
+
+## Methods
+
+idk
+
+## Results
+
+Across the different sampling sites, there were drastically different sex ratios, ranging from `r max` to `r min`.
+```{r}
+#| echo: false
+ratio_map
+```
+An equal sex ratio would be 1, and many sites deviated from an equal proportion of males and females.
+```{r}
+#| echo: false
+greaterorless_map
+```
+Only two sites had an equal proportion of males to females, site 16 and site 18.
+```{r}
+#| echo: false
+table
+```
+There was a relationship found between habitat suitability and the sex ratio.  The linear model (F = `r f` on `r df` and `r df2` DF) found a p-value of `r pv` and an adjusted R-squared value of `r r_adj`.  Because the p-value was below the significance threshold of 0.05, there was enough evidence to reject the null hypothesis that there is no relationship between habitat suitability and the sex ratio.  The linear model found an intercept of `r int` and a slope of `r m`.  This means that as habitat suitability increases, the sex ratio decreases.
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+rat_suit_graph
+```
+Multiple linear models were run including Phenotype A and Phenotype B as well as habitat suitability as a predictor for sex ratio.  However, none of the models had a p-value less than 0.05, so none were significant.  The inclusion of Phenotype A and Phenotype B did not improve the functional relationship over habitat suitability alone.
+
+Since the last glacial maximum, habitat suitability has changed at each of the sampling locations.  However, it has increased in some locations and decreased in others.
+```{r}
+#| echo: false
+suit_change_map
+```
+The sex ratio for each sampling location during the last glacial maximum was modeled using the linear model developed above.
+```{r}
+#| echo: false
+#| message: false
+pred_rat_graph
+```
+Since the last glacial maximum, habitat suitability has changed significantly, and so, the sex ratio has also changed significantly.  Many of the sites now have a lower sex ratio than the predicted sex ratio at the last glacier maximum.  This could partly be because a change in climate (climate change) has changed the habitat suitability of the sampling locations.
+```{r}
+#| echo: false
+ratio_map2
+pred_m.f_map
+```
+
