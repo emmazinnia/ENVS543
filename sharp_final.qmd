@@ -1,5 +1,5 @@
 ---
-title: "Final Exam"
+title: "Sex Ratios of the Sonora Desert Bark Beetle from the Last Glacier Maximum to Now"
 author: "Emma Sharp"
 date: "12/7/2024"
 format: html
@@ -24,6 +24,7 @@ then <- raster("suitability_lgm.asc")
 
 ```{r}
 #| message: false
+#| include: false
 #Creating a Data Frame Sorted By Site, With Columns For Count of Males,
 #Females, Ratio of Males to Females, and if Ratio Deviates From 1 (Also
 #Creating Column With Only Site Number)
@@ -96,6 +97,7 @@ by_site$Ratio_Dev <- factor(by_site$Ratio_Dev,
 
 ```{r}
 #| message: false
+#| include: false
 #Do sampled populations of the beetle have different sex ratios? You can
 #assume the plant to be replicated within each site.
 now %>%
@@ -129,6 +131,7 @@ min <- min(by_site$Males.Females)
 
 ```{r}
 #| message: false
+#| include: false
 #Which sites have sex ratios that deviate from equal proportions of males and
 #females at the site?
 
@@ -157,6 +160,7 @@ now %>%
 ```{r}
 #| warning: false
 #| message: false
+#| include: false
 #Is there a functional relationship between the habitat suitability at the
 #sampling locations and the sex ratio? Since all of our suitability
 #measurements are taken from raster data with a cell size of 1.0 km2 (e.g.,
@@ -201,6 +205,7 @@ m <- co[2,1]
 ```
 
 ```{r}
+#| include: false
 #Does the inclusion of Phenotype A and Phenotype B improve the functional
 #relationship over habitat suitability alone?
 rat_suit_a <- lm(Males.Females ~ Suitability + A,
@@ -228,6 +233,7 @@ rat_suit_ab <- lm(Males.Females ~ Suitability + A + B,
 
 ```{r}
 #| message: false
+#| include: false
 #Using the data from the last glacial maximum and the sampling locations, has
 #the suitability changed at each location (e.g., was it as suitable 20,000
 #years ago as today)?
@@ -255,6 +261,7 @@ now %>%
 
 ```{r}
 #| message: false
+#| include: false
 #Predict the distribution of the historical sex ratio by applying the model
 #you developed for current conditions to the suitability estimated from the
 #last glacial maximum.  Across the landscape, do you detect any trends that
@@ -298,6 +305,7 @@ by_site %>%
 ```
 
 ```{r}
+#| include: false
 #Creating a Table
 by_site$Site <- sort(as.numeric(by_site$Site))
 
@@ -310,11 +318,15 @@ as.data.frame(by_site) %>%
 
 ## Methods
 
-idk
+For this analysis, four data sets were used; one representing the location of each sampling site, one with counts of each animal with data such as sex, Phenotype A, and Phenotype B, one raster representing habitat suitability now, and one raster representing predicted habitat suitability at the last glacier maximum.  To complete the analysis, the data set with counts of each animal was sorted by site, then sex, with counts of the number of animals under each category.  Then, the data was pivoted wider to have a column for count of males and females for each row (site).  
+
+A Male:Female ratio was created by dividing the number of males by the number of females at each sampling location.  Mean of Phenotype A and mean of Phenotype B at each sampling location were calculated and then added to the created data frame.  Then, the data representing the location of each sampling site was added to the created data frame, which was then mutated into a SF.  Then, for each sampling location, data was extracted from both rasters to show habitat suitability now and habitat suitability at the last glacier maximum.
+
+A linear model was run to determine the relationship between habitat suitability at the sampling locations and the sex ratio.  Addition models were run to determine if adding Phenotype A and Phenotype B improve the functional relationship over habitat suitability alone.  Finally, using the linear model run on the relationship between habitat suitability and the sex ratios, predicted sex ratios during the last glacier maximum were found using the habitat suitability at the last glacier maximum.
 
 ## Results
 
-Across the different sampling sites, there were drastically different sex ratios, ranging from `r max` to `r min`.
+Across the different sampling sites, there were drastically different sex ratios, ranging from `r min` to `r max`.
 ```{r}
 #| echo: false
 ratio_map
